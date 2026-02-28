@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Decimal Odyssey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .digit-roll { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 追加: 変更があった箇所を強調するポップアニメーション */
+        @keyframes pop-highlight {
+            0% { transform: scale(1); filter: brightness(1); }
+            30% { transform: scale(1.15); filter: brightness(1.2); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .animate-pop { animation: pop-highlight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans overflow-hidden">
+    <div id="app" class="flex flex-col h-screen">
+        <!-- Header -->
+        <header class="flex-none bg-white border-b border-slate-200 px-6 py-4 shadow-sm z-30">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl text-white shadow-lg">
+                        <!-- Box Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black tracking-tight leading-none">Decimal Odyssey</h1>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1.5">10進数の仕組みを学ぶ</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                        <button id="btn-digit-1" class="px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-600">1桁</button>
+                        <button id="btn-digit-2" class="px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-600">2桁</button>
+                        <button id="btn-digit-3" class="px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-600">3桁</button>
+                        <button id="btn-digit-4" class="px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-600">4桁</button>
+                    </div>
+                    <button id="btn-random" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md shadow-indigo-100">
+                        <!-- Refresh Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                        ランダム
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation / Controls -->
+        <nav class="flex-none bg-white/80 backdrop-blur-md border-b border-slate-100 p-3 z-20">
+            <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
+                <div class="flex bg-slate-200/50 p-1 rounded-2xl shadow-inner overflow-x-auto no-scrollbar">
+                    <button id="btn-mode-blocks" class="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap text-slate-500 hover:text-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        ブロック
+                    </button>
+                    <button id="btn-mode-expansion" class="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap text-slate-500 hover:text-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                        展開
+                    </button>
+                    <button id="btn-mode-cycles" class="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap text-slate-500 hover:text-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="1"></circle></svg>
+                        サイクル
+                    </button>
+                    <button id="btn-mode-abacus" class="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap text-slate-500 hover:text-slate-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>
+                        そろばん
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3 bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm">
+                    <!-- 追加: Auto Button -->
+                    <button id="btn-auto" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-50 text-slate-600 hover:bg-slate-100 shadow-inner">
+                        <span id="auto-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        </span>
+                        AUTO
+                    </button>
+                    <div class="w-px h-6 bg-slate-200"></div>
+
+                    <button id="btn-minus" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-90 shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <div class="px-6 flex flex-col items-center min-w-[120px]">
+                        <span id="display-number" class="text-3xl font-black font-mono leading-none tracking-tighter text-slate-800">123</span>
+                    </div>
+                    <button id="btn-plus" class="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all active:scale-90 shadow-inner">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scroll">
+            <div class="max-w-5xl mx-auto h-full">
+                <!-- Visualization Container -->
+                <div id="vis-container" class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 p-6 md:p-10 min-h-[520px] flex items-center justify-center relative overflow-hidden transition-all">
+                    <!-- Dynamic Content -->
+                </div>
+                
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-800 text-white p-6 rounded-[2rem] shadow-lg">
+                        <h3 class="text-indigo-300 font-bold text-xs uppercase tracking-widest mb-2">何が起きている？</h3>
+                        <p id="desc-content" class="text-slate-300 text-xs leading-relaxed"></p>
+                    </div>
+                    <div id="status-cards" class="grid grid-cols-2 gap-4">
+                        <!-- Dynamic Status Cards -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // State
+        const state = {
+            number: 123,
+            digits: 3,
+            viewMode: 'blocks',
+            autoPlay: false,
+            autoPlayInterval: null,
+            prevParts: null // 追加: 以前の状態を保持
+        };
+
+        const fullPalette = [
+            { bg: 'bg-rose-500', text: 'text-rose-500', light: 'bg-rose-50', border: 'border-rose-200', name: '1000s' },
+            { bg: 'bg-sky-500', text: 'text-sky-500', light: 'bg-sky-50', border: 'border-sky-200', name: '100s' },
+            { bg: 'bg-emerald-500', text: 'text-emerald-500', light: 'bg-emerald-50', border: 'border-emerald-200', name: '10s' },
+            { bg: 'bg-amber-500', text: 'text-amber-500', light: 'bg-amber-50', border: 'border-amber-200', name: '1s' },
+        ];
+
+        // Logic
+        function getMaxVal() {
+            return Math.pow(10, state.digits) - 1;
+        }
+
+        function getParts() {
+            const maxVal = getMaxVal();
+            const effectiveNum = Math.min(state.number, maxVal);
+            const s = effectiveNum.toString().padStart(state.digits, '0');
+            const formatted = s.length > state.digits ? s.slice(-state.digits) : s;
+            return formatted.split('').map(Number);
+        }
+
+        function getPalette() {
+            return fullPalette.slice(4 - state.digits);
+        }
+
+        function setDigits(d) {
+            state.digits = d;
+            if (state.number > getMaxVal()) {
+                state.number = getMaxVal();
+            }
+            updateUI();
+        }
+
+        function setViewMode(m) {
+            state.viewMode = m;
+            updateUI();
+        }
+
+        function randomize() {
+            state.number = Math.floor(Math.random() * (getMaxVal() + 1));
+            updateUI();
+        }
+
+        function adjust(val) {
+            const next = state.number + val;
+            if (next >= 0 && next <= getMaxVal()) {
+                state.number = next;
+                updateUI();
+            }
+        }
+
+        // 追加: AutoPlayのトグル処理
+        function toggleAutoPlay() {
+            state.autoPlay = !state.autoPlay;
+            const btn = document.getElementById('btn-auto');
+            const icon = document.getElementById('auto-icon');
+            
+            if (state.autoPlay) {
+                // ONの状態
+                btn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-200');
+                btn.classList.remove('bg-slate-50', 'text-slate-600', 'shadow-inner');
+                icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
+                
+                state.autoPlayInterval = setInterval(() => {
+                    if (state.number >= getMaxVal()) {
+                        state.number = 0; // 最大値に達したら0にループ
+                    } else {
+                        state.number++;
+                    }
+                    updateUI(true); // isAutoTick = true
+                }, 100);
+            } else {
+                // OFFの状態
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-200');
+                btn.classList.add('bg-slate-50', 'text-slate-600', 'shadow-inner');
+                icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+                
+                clearInterval(state.autoPlayInterval);
+                state.autoPlayInterval = null;
+            }
+        }
+
+        // Render Functions
+        function generateBlocks(parts, palette, changed) {
+            let html = '<div class="flex flex-wrap justify-center items-end gap-x-12 gap-y-16 w-full">';
+            parts.forEach((count, i) => {
+                const placeValue = Math.pow(10, parts.length - 1 - i);
+                const p = palette[i];
+                let blockHtml = '';
+
+                if (placeValue === 1000 && count > 0) {
+                    let cubes = '';
+                    for(let j=0; j<count; j++) {
+                        let layers = '';
+                        for(let l=0; l<10; l++) {
+                            const topLayer = l === 0 ? `<div class="grid grid-cols-10 grid-rows-10 h-full w-full opacity-30">${Array(100).fill('<div class="border-[0.2px] border-white/50"></div>').join('')}</div>` : '';
+                            layers += `<div class="absolute inset-0 bg-rose-500 rounded-sm border-rose-600/30" style="transform: translate(${-l*2}px, ${-l*2}px); border: 0.5px solid rgba(0,0,0,0.1); z-index: ${10-l}">${topLayer}</div>`;
+                        }
+                        cubes += `<div class="relative w-20 h-20 mb-4 scale-90 md:scale-100">${layers}</div>`;
+                    }
+                    blockHtml = `<div class="flex flex-wrap-reverse gap-4 justify-center max-w-[400px]">${cubes}</div>`;
+                } else if (placeValue === 100 && count > 0) {
+                    let plates = '';
+                    for(let j=0; j<count; j++) {
+                        let cols = '';
+                        for(let r=0; r<10; r++) {
+                            cols += `<div class="border-x-[0.5px] border-white/40 flex flex-col">${Array(10).fill('<div class="flex-1 border-y-[0.5px] border-white/20"></div>').join('')}</div>`;
+                        }
+                        plates += `<div class="w-16 h-16 bg-sky-400 rounded-sm shadow-md grid grid-cols-10 border border-sky-600/20 overflow-hidden">${cols}</div>`;
+                    }
+                    blockHtml = `<div class="flex flex-wrap-reverse gap-4 justify-center max-w-[280px]">${plates}</div>`;
+                } else if (placeValue === 10 && count > 0) {
+                    let rods = '';
+                    for(let j=0; j<count; j++) {
+                        rods += `<div class="w-4 h-24 bg-emerald-500 rounded-sm shadow-sm flex flex-col border border-emerald-700/20 overflow-hidden">${Array(10).fill('<div class="flex-1 border-y-[0.5px] border-white/40"></div>').join('')}</div>`;
+                    }
+                    blockHtml = `<div class="flex flex-wrap items-end gap-2 justify-center max-w-[180px]">${rods}</div>`;
+                } else if (placeValue === 1 && count > 0) {
+                    let units = '';
+                    for(let j=0; j<count; j++) {
+                        units += `<div class="w-6 h-6 bg-amber-400 rounded shadow-sm border border-amber-600/20 animate-in zoom-in-50"></div>`;
+                    }
+                    blockHtml = `<div class="grid grid-cols-3 gap-1.5 p-2 bg-amber-50 rounded-xl border-2 border-dashed border-amber-200">${units}</div>`;
+                } else if (count === 0) {
+                    blockHtml = `<div class="text-slate-200 font-black text-6xl opacity-20 italic">0</div>`;
+                }
+
+                // 変更: min-h-[200px] を h-[220px] に固定し、要素が上下にブレないように修正
+                html += `
+                <div class="flex flex-col items-center group ${changed[i] ? 'animate-pop' : ''}">
+                    <div class="relative mb-6 h-[220px] w-full flex items-end justify-center">
+                        ${blockHtml}
+                    </div>
+                    <div class="text-[11px] font-black ${p.text} mb-1 uppercase">${placeValue}の位</div>
+                    <div class="px-4 py-1.5 ${p.light} ${p.text} rounded-full text-sm font-mono font-black border ${p.border}">${count}</div>
+                </div>`;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function generateExpansion(parts, palette, changed) {
+            let html = '<div class="flex flex-col items-center gap-12 w-full font-mono"><div class="flex items-center gap-4 flex-wrap justify-center">';
+            parts.forEach((count, i) => {
+                const val = count * Math.pow(10, parts.length - 1 - i);
+                const p = palette[i];
+                // 変更: changed[i]がtrueなら animate-pop クラスを付与
+                html += `
+                <div class="flex flex-col items-center ${changed[i] ? 'animate-pop' : ''}">
+                    <div class="text-5xl md:text-7xl font-black ${p.text} drop-shadow-sm">${val}</div>
+                    <div class="text-[10px] font-bold text-slate-400 mt-4 uppercase tracking-[0.2em] bg-slate-100 px-3 py-1 rounded-full">${count} × ${Math.pow(10, parts.length - 1 - i)}</div>
+                </div>`;
+                if (i < parts.length - 1) {
+                    html += `<div class="text-4xl text-slate-200 font-bold px-2">+</div>`;
+                }
+            });
+            html += `</div>
+            <div class="w-full max-w-md h-px bg-slate-100 relative">
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-6 text-slate-300 font-black italic text-xs uppercase tracking-widest">Result</div>
+            </div>
+            <div class="text-[7rem] md:text-[10rem] font-black tracking-tighter text-slate-800 leading-none">${parts.join('')}</div>
+            </div>`;
+            return html;
+        }
+
+        function generateCycles(parts, palette, changed) {
+            let html = '<div class="flex gap-4 md:gap-10">';
+            parts.forEach((val, i) => {
+                const p = palette[i];
+                let nums = '';
+                for(let n=0; n<=9; n++) {
+                    nums += `<div class="h-16 md:h-24 flex items-center justify-center">
+                        <span class="text-4xl md:text-6xl font-black ${val === n ? p.text : 'text-slate-200 scale-75'}">${n}</span>
+                    </div>`;
+                }
+                // 変更: 中央のグラデーションをなくし、上下のみにグラデーションを配置して中央の色を濃く保つ
+                html += `
+                <div class="flex flex-col items-center ${changed[i] ? 'animate-pop' : ''}">
+                    <div class="w-16 h-48 md:w-24 md:h-64 bg-slate-50 rounded-[2.5rem] border-4 border-white shadow-2xl overflow-hidden relative">
+                        <div class="absolute w-full digit-roll" style="transform: translateY(-${val * 10}%)">
+                            ${nums}
+                        </div>
+                        <div class="absolute top-0 inset-x-0 h-1/3 pointer-events-none bg-gradient-to-b from-slate-50 to-transparent"></div>
+                        <div class="absolute bottom-0 inset-x-0 h-1/3 pointer-events-none bg-gradient-to-t from-slate-50 to-transparent"></div>
+                    </div>
+                    <div class="mt-6 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white ${p.bg}">
+                        ${Math.pow(10, parts.length - 1 - i)}s
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function generateAbacus(parts, palette, changed) {
+            let grids = '';
+            for(let i=0; i<4; i++) grids += '<div class="border-x border-white/5 h-full"></div>';
+
+            let rods = '';
+            parts.forEach((val, i) => {
+                const upperBead = val >= 5 ? 1 : 0;
+                const lowerBeads = val % 5;
+                const p = palette[i];
+
+                // 変更: activeにかかわらず常にテーマカラーを使用する
+                const beadHtml = (active, pos) => {
+                    const transform = pos === 'top' ? 'translateY(-15px)' : 'translateY(15px)';
+                    return `<div class="w-14 h-8 rounded-[1.2rem] shadow-xl transition-all duration-500 ease-out border-b-4 border-black/20 ${p.bg} z-10" style="transform: ${transform}">
+                        <div class="w-full h-full rounded-full bg-gradient-to-tr from-black/10 to-transparent"></div>
+                    </div>`;
+                };
+
+                let lowerBeadsHtml = '';
+                for(let bIdx=0; bIdx<4; bIdx++) {
+                    lowerBeadsHtml += beadHtml(bIdx < lowerBeads, bIdx < lowerBeads ? 'top' : 'bottom');
+                }
+
+                // 変更: 5の玉の背景にさりげなく「5」の文字を配置
+                rods += `
+                <div class="w-14 flex flex-col items-center relative ${changed[i] ? 'animate-pop z-20' : ''}">
+                    <div class="absolute w-2.5 h-full bg-[#d7ccc8] left-1/2 -translate-x-1/2 -z-10 rounded-full border border-black/10"></div>
+                    <div class="flex-[1.5] flex flex-col justify-start pt-4 relative">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/20 font-black text-2xl select-none pointer-events-none z-0">5</div>
+                        ${beadHtml(upperBead === 1, upperBead === 1 ? 'bottom' : 'top')}
+                    </div>
+                    <div class="flex-[3] flex flex-col justify-end pb-6 gap-1.5 relative">
+                        ${lowerBeadsHtml}
+                    </div>
+                </div>`;
+            });
+
+            return `
+            <div class="bg-[#5d4037] p-8 rounded-3xl border-[12px] border-[#3e2723] shadow-2xl relative w-full max-w-2xl overflow-hidden">
+                <div class="absolute inset-0 grid grid-cols-4 pointer-events-none px-8">${grids}</div>
+                <div class="absolute top-[35%] left-0 w-full h-4 bg-[#3e2723] z-20 shadow-lg"></div>
+                <div class="flex justify-around items-stretch h-[320px] relative z-10 px-4">${rods}</div>
+            </div>`;
+        }
+
+        // 変更: changed パラメータを追加
+        function renderVisualization(parts, palette, changed) {
+            const container = document.getElementById('vis-container');
+            let html = '';
+            if (state.viewMode === 'blocks') html = generateBlocks(parts, palette, changed);
+            else if (state.viewMode === 'expansion') html = generateExpansion(parts, palette, changed);
+            else if (state.viewMode === 'cycles') html = generateCycles(parts, palette, changed);
+            else if (state.viewMode === 'abacus') html = generateAbacus(parts, palette, changed);
+            container.innerHTML = html;
+        }
+
+        // Main Update Loop
+        // 変更: isAutoTick パラメータを追加
+        function updateUI(isAutoTick = false) {
+            // Digits buttons
+            [1, 2, 3, 4].forEach(d => {
+                const btn = document.getElementById(`btn-digit-${d}`);
+                if (state.digits === d) {
+                    btn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all bg-white shadow-sm text-indigo-600";
+                } else {
+                    btn.className = "px-3 py-1 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-600";
+                }
+            });
+
+            // Mode buttons
+            ['blocks', 'expansion', 'cycles', 'abacus'].forEach(m => {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (state.viewMode === m) {
+                    btn.className = "flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap bg-indigo-600 text-white shadow-md shadow-indigo-200 scale-105";
+                } else {
+                    btn.className = "flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap text-slate-500 hover:text-slate-800";
+                }
+            });
+
+            // Number Text
+            document.getElementById('display-number').textContent = state.number.toLocaleString();
+
+            // Description
+            const descriptions = {
+                'blocks': "10個集まると次の大きさのカタマリになります。1のキューブがつながって10の棒に、棒が10本並んで100の板に、板が10枚重なって1000の塊になる様子を視覚化しています。",
+                'expansion': "数は、それぞれの位の値が足し合わされてできています。たとえば「123」は「100 + 20 + 3」の合計であることを数式で示しています。",
+                'cycles': "それぞれの桁は0から9までのサイクル（周期）を持っています。1の位が10歩進むと10の位が1つ動き、連鎖していく仕組みです。",
+                'abacus': "そろばんは、位置（桁）と玉の状態で数を表します。上の玉1つで「5」、下の玉1つで「1」を表現し、それらの組み合わせで10進数を操作します。"
+            };
+            document.getElementById('desc-content').textContent = descriptions[state.viewMode];
+
+            // Computed Data
+            const parts = getParts();
+            const palette = getPalette();
+
+            // 追加: 変更の検出（自動再生中ではなく、かつ桁数が同じ場合のみ）
+            let changedParts = parts.map(() => false);
+            if (!state.autoPlay && !isAutoTick && state.prevParts && state.prevParts.length === parts.length) {
+                changedParts = parts.map((p, i) => p !== state.prevParts[i]);
+            }
+
+            // Status Cards
+            const statusContainer = document.getElementById('status-cards');
+            let statusHtml = '';
+            parts.forEach((val, i) => {
+                const p = palette[i];
+                // 変更: changedParts を見てアニメーションクラスを付与
+                statusHtml += `
+                <div class="p-4 rounded-2xl ${p.light} border ${p.border} transition-all duration-300 ${changedParts[i] ? 'animate-pop' : ''}">
+                    <div class="text-[10px] font-bold ${p.text} mb-1 uppercase tracking-tighter">${Math.pow(10, parts.length - 1 - i)}の位</div>
+                    <div class="text-2xl font-black text-slate-800">${val}</div>
+                </div>`;
+            });
+            statusContainer.innerHTML = statusHtml;
+
+            // Render SVG / HTML content
+            renderVisualization(parts, palette, changedParts);
+            
+            // 追加: 次の比較のために状態を保存
+            state.prevParts = [...parts];
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Event Listeners
+            [1, 2, 3, 4].forEach(d => {
+                document.getElementById(`btn-digit-${d}`).addEventListener('click', () => setDigits(d));
+            });
+            ['blocks', 'expansion', 'cycles', 'abacus'].forEach(m => {
+                document.getElementById(`btn-mode-${m}`).addEventListener('click', () => setViewMode(m));
+            });
+            document.getElementById('btn-random').addEventListener('click', randomize);
+            document.getElementById('btn-minus').addEventListener('click', () => adjust(-1));
+            document.getElementById('btn-plus').addEventListener('click', () => adjust(1));
+            
+            // 追加: AUTOボタンのイベント
+            document.getElementById('btn-auto').addEventListener('click', toggleAutoPlay);
+
+            // Initial render
+            updateUI();
+        });
+    </script>
+</body>
+</html>
