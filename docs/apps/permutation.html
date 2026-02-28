@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Permutation Multiverse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f1f5f9; 
+            color: #1e293b; 
+            height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 全体は固定 */
+        }
+        
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* カードの共通デザイン */
+        .pattern-card {
+            background: white;
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        .pattern-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #f43f5e;
+            z-index: 10;
+        }
+
+        /* 密度別の高さ固定設定 */
+        .density-detail .pattern-card { height: 320px; padding: 1.5rem; }
+        .density-normal .pattern-card { height: 200px; padding: 1rem; }
+        .density-compact .pattern-card { height: 120px; padding: 0.5rem; }
+
+        /* グリッドレイアウト */
+        #patterns-container.density-detail { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+        #patterns-container.density-normal { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+        #patterns-container.density-compact { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+
+        .view-btn.active { background-color: #f43f5e; color: white; transform: scale(1.05); }
+        .density-btn.active { background-color: #334155; color: white; }
+        
+        .math-font { font-family: 'JetBrains Mono', monospace; }
+
+        /* 数値バブルの色分け */
+        .num-bubble {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- ヘッダー -->
+    <header class="flex-none bg-white border-b border-slate-200 px-6 py-4 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gradient-to-br from-rose-400 to-rose-600 rounded-2xl text-white shadow-lg shadow-rose-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12H3"/><path d="M15 6l6 6-6 6"/><path d="M9 18l-6-6 6-6"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-slate-900 leading-none">Permutation Multiverse</h1>
+                    <p id="view-desc" class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1.5">置換図</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                    <button id="btn-minus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all font-bold text-xl">-</button>
+                    <div class="flex flex-col items-center px-3 min-w-[4rem]">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">要素数 N</span>
+                        <span id="val-n" class="text-2xl font-black text-slate-800 leading-none">3</span>
+                    </div>
+                    <button id="btn-plus" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all font-bold text-xl">+</button>
+                </div>
+                <div class="flex flex-col items-end border-l-2 border-slate-100 pl-6">
+                    <span class="text-[9px] font-bold text-rose-400 uppercase tracking-widest">順列の総数</span>
+                    <span id="fact-count" class="text-2xl font-mono font-black text-rose-600 leading-none">6</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- コントロールバー -->
+    <nav class="flex-none bg-white/80 backdrop-blur-md border-b border-slate-100 p-3 z-20 sticky top-0">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-4">
+            <div class="flex bg-slate-200/50 p-1 rounded-2xl shadow-inner overflow-x-auto no-scrollbar max-w-full">
+                <button onclick="setView('list')" id="btn-list" class="view-btn active px-5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all text-slate-500">ならびかえ</button>
+                <button onclick="setView('amida')" id="btn-amida" class="view-btn px-5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all text-slate-500">あみだくじ</button>
+                <button onclick="setView('string')" id="btn-string" class="view-btn px-5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all text-slate-500">いれかえ線</button>
+                <button onclick="setView('product')" id="btn-product" class="view-btn px-5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all text-slate-500">入れ替えの積</button>
+                <button onclick="setView('matrix')" id="btn-matrix" class="view-btn px-5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all text-slate-500">ドット行列</button>
+                <button onclick="setView('cycle')" id="btn-cycle" class="view-btn px-5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all text-slate-500">ループ表示</button>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-[10px] font-black text-slate-400 uppercase">表示サイズ:</span>
+                <div class="flex bg-slate-200/50 p-1 rounded-xl shadow-inner">
+                    <button onclick="setDensity('detail')" id="den-detail" class="density-btn px-4 py-1.5 rounded-lg text-[10px] font-extrabold text-slate-500 transition-all">大きく</button>
+                    <button onclick="setDensity('normal')" id="den-normal" class="density-btn active px-4 py-1.5 rounded-lg text-[10px] font-extrabold text-slate-500 transition-all">ふつう</button>
+                    <button onclick="setDensity('compact')" id="den-compact" class="density-btn px-4 py-1.5 rounded-lg text-[10px] font-extrabold text-slate-500 transition-all">小さく</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- メインコンテンツ領域（スクロール可能） -->
+    <main class="flex-1 overflow-y-auto custom-scroll p-6 md:p-10">
+        <div id="patterns-container" class="max-w-7xl mx-auto grid density-normal gap-6">
+            <!-- JavaScriptでカードが生成されます -->
+        </div>
+    </main>
+
+    <script>
+        let n = 3;
+        let viewMode = 'list';
+        let density = 'normal';
+        const maxN = 7;
+        const minN = 1;
+
+        const colorPalette = [
+            '#fb7185', '#38bdf8', '#4ade80', '#fbbf24', '#a78bfa', '#f472b6', '#2dd4bf'
+        ];
+
+        const descs = {
+            list: "ならびかえ：数字がどんな順番にならんでいるかな？",
+            amida: "あみだくじ：となりどうしを入れ替えて、この順番を作ろう",
+            string: "いれかえ線：上の数字が下のどこに動いたか線でつないだ図",
+            product: "入れ替えの積：s₁は「1番目と2番目の入れ替え」をあらわすよ",
+            matrix: "ドット行列：どの数字がどこにあるかをドットで表したよ",
+            cycle: "ループ表示：数字がどの場所をぐるぐる回っているか見てみよう"
+        };
+
+        function init() {
+            document.getElementById('btn-plus').addEventListener('click', () => changeN(1));
+            document.getElementById('btn-minus').addEventListener('click', () => changeN(-1));
+            update();
+        }
+
+        function changeN(delta) {
+            const next = n + delta;
+            if (next >= minN && next <= maxN) {
+                n = next;
+                update();
+            }
+        }
+
+        function setView(mode) {
+            viewMode = mode;
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${mode}`).classList.add('active');
+            document.getElementById('view-desc').textContent = descs[mode];
+            render();
+        }
+
+        function setDensity(d) {
+            density = d;
+            document.querySelectorAll('.density-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`den-${d}`).classList.add('active');
+            const container = document.getElementById('patterns-container');
+            container.classList.remove('density-detail', 'density-normal', 'density-compact');
+            container.classList.add(`density-${d}`);
+            render();
+        }
+
+        function generatePermutations(n) {
+            const result = [];
+            const nums = Array.from({length: n}, (_, i) => i + 1);
+            const backtrack = (curr) => {
+                if (curr.length === n) { result.push([...curr]); return; }
+                for (let i = 0; i < n; i++) {
+                    if (curr.includes(nums[i])) continue;
+                    curr.push(nums[i]);
+                    backtrack(curr);
+                    curr.pop();
+                }
+            };
+            backtrack([]);
+            return result;
+        }
+
+        function getReducedWord(perm) {
+            let arr = [...perm];
+            const swaps = [];
+            let sorted = false;
+            while (!sorted) {
+                sorted = true;
+                for (let i = 0; i < arr.length - 1; i++) {
+                    if (arr[i] > arr[i+1]) {
+                        [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
+                        swaps.push(i + 1);
+                        sorted = false;
+                        break;
+                    }
+                }
+            }
+            return swaps.reverse();
+        }
+
+        function update() {
+            document.getElementById('val-n').textContent = n;
+            document.getElementById('btn-plus').disabled = (n >= maxN);
+            document.getElementById('btn-minus').disabled = (n <= minN);
+            const perms = generatePermutations(n);
+            document.getElementById('fact-count').textContent = perms.length;
+            render(perms);
+        }
+
+        function render(perms = null) {
+            const container = document.getElementById('patterns-container');
+            container.innerHTML = '';
+            const data = perms || generatePermutations(n);
+            const frag = document.createDocumentFragment();
+
+            data.forEach((perm, i) => {
+                const card = document.createElement('div');
+                card.className = 'pattern-card';
+                
+                const word = (viewMode === 'amida' || viewMode === 'product') ? getReducedWord(perm) : [];
+
+                if (viewMode === 'list') drawList(card, perm);
+                else if (viewMode === 'amida') drawAmida(card, word);
+                else if (viewMode === 'string') drawStringArt(card, perm);
+                else if (viewMode === 'product') drawProduct(card, word);
+                else if (viewMode === 'matrix') drawMatrix(card, perm);
+                else if (viewMode === 'cycle') drawCycle(card, perm);
+
+                if (density !== 'compact') {
+                    const idx = document.createElement('div');
+                    idx.className = 'absolute bottom-3 right-4 text-[10px] font-black text-slate-200 math-font';
+                    idx.textContent = `#${(i+1)}`;
+                    card.appendChild(idx);
+                }
+                frag.appendChild(card);
+            });
+            container.appendChild(frag);
+        }
+
+        // --- Visualizers ---
+
+        function drawList(card, perm) {
+            const container = document.createElement('div');
+            container.className = 'flex flex-wrap justify-center items-center gap-2';
+            
+            const baseSize = density === 'detail' ? 14 : density === 'normal' ? 10 : 7;
+            const fontSize = density === 'detail' ? 'text-2xl' : density === 'normal' ? 'text-sm' : 'text-[10px]';
+
+            perm.forEach(num => {
+                const bubble = document.createElement('div');
+                const sz = density === 'detail' ? 'w-14 h-14' : density === 'normal' ? 'w-8 h-8' : 'w-5 h-5';
+                bubble.className = `num-bubble ${sz} ${fontSize} math-font`;
+                bubble.style.backgroundColor = colorPalette[(num - 1) % colorPalette.length];
+                bubble.textContent = num;
+                container.appendChild(bubble);
+            });
+            card.appendChild(container);
+        }
+
+        function drawAmida(card, word) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            // 固定高さのカード内でスクロールせずに表示できるよう高さを制限
+            const svgHeight = 120; 
+            svg.setAttribute("viewBox", `0 0 100 ${svgHeight}`);
+            svg.style.width = "90%";
+            svg.style.height = "auto";
+            
+            const gap = 100 / (n + 1);
+            // 縦棒
+            for (let i = 1; i <= n; i++) {
+                const line = document.createElementNS(svgNS, "line");
+                line.setAttribute("x1", i * gap); line.setAttribute("y1", 10);
+                line.setAttribute("x2", i * gap); line.setAttribute("y2", svgHeight - 10);
+                line.setAttribute("stroke", "#e2e8f0");
+                line.setAttribute("stroke-width", "2");
+                line.setAttribute("stroke-linecap", "round");
+                svg.appendChild(line);
+            }
+            // 横棒
+            const stepGap = word.length > 0 ? (svgHeight - 40) / word.length : 0;
+            word.forEach((sIdx, step) => {
+                const y = 20 + step * stepGap;
+                const x1 = sIdx * gap;
+                const x2 = (sIdx + 1) * gap;
+                const bar = document.createElementNS(svgNS, "line");
+                bar.setAttribute("x1", x1); bar.setAttribute("y1", y);
+                bar.setAttribute("x2", x2); bar.setAttribute("y2", y);
+                bar.setAttribute("stroke", "#f43f5e");
+                bar.setAttribute("stroke-width", "3");
+                bar.setAttribute("stroke-linecap", "round");
+                svg.appendChild(bar);
+            });
+            card.appendChild(svg);
+        }
+
+        function drawStringArt(card, perm) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("viewBox", `0 0 100 60`);
+            svg.style.width = "90%";
+            const gap = 100 / (n + 1);
+            perm.forEach((v, i) => {
+                const x1 = (i + 1) * gap;
+                const x2 = v * gap;
+                const line = document.createElementNS(svgNS, "line");
+                line.setAttribute("x1", x1); line.setAttribute("y1", 10);
+                line.setAttribute("x2", x2); line.setAttribute("y2", 50);
+                line.setAttribute("stroke", "#f43f5e");
+                line.setAttribute("stroke-width", "2");
+                line.setAttribute("stroke-linecap", "round");
+                line.setAttribute("opacity", "0.6");
+                svg.appendChild(line);
+                
+                [10, 50].forEach(y => {
+                    const c = document.createElementNS(svgNS, "circle");
+                    c.setAttribute("cx", y === 10 ? x1 : x2);
+                    c.setAttribute("cy", y);
+                    c.setAttribute("r", 2);
+                    c.setAttribute("fill", colorPalette[(y === 10 ? i : v-1) % colorPalette.length]);
+                    svg.appendChild(c);
+                });
+            });
+            card.appendChild(svg);
+        }
+
+        function drawProduct(card, word) {
+            const container = document.createElement('div');
+            container.className = 'flex flex-wrap justify-center items-center gap-1.5 px-6 math-font font-extrabold text-rose-500 leading-tight text-center';
+            const fontSize = density === 'detail' ? 'text-2xl' : density === 'normal' ? 'text-sm' : 'text-[10px]';
+            
+            if (word.length === 0) {
+                container.innerHTML = '<span class="text-slate-300">id</span>';
+            } else {
+                word.forEach(sIdx => {
+                    const s = document.createElement('span');
+                    s.className = fontSize;
+                    s.innerHTML = `s<sub class="text-[0.6em]">${sIdx}</sub>`;
+                    container.appendChild(s);
+                });
+            }
+            card.appendChild(container);
+        }
+
+        function drawMatrix(card, perm) {
+            const grid = document.createElement('div');
+            grid.className = 'grid gap-1 bg-slate-50 border-2 border-slate-100 p-1 rounded-xl';
+            grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+            
+            const cellBase = density === 'detail' ? 10 : density === 'normal' ? 6 : 4;
+            
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                    const cell = document.createElement('div');
+                    const sz = density === 'detail' ? 'w-10 h-10' : density === 'normal' ? 'w-6 h-6' : 'w-4 h-4';
+                    cell.className = `${sz} bg-white rounded-md flex items-center justify-center`;
+                    if (perm[r] === c + 1) {
+                        const dot = document.createElement('div');
+                        dot.className = 'w-3/4 h-3/4 rounded-full shadow-inner';
+                        dot.style.backgroundColor = colorPalette[c % colorPalette.length];
+                        cell.appendChild(dot);
+                    }
+                    grid.appendChild(cell);
+                }
+            }
+            card.appendChild(grid);
+        }
+
+        function drawCycle(card, perm) {
+            const visited = new Array(n).fill(false);
+            const cycles = [];
+            for (let i = 0; i < n; i++) {
+                if (!visited[i]) {
+                    let curr = i;
+                    const cycle = [];
+                    while (!visited[curr]) {
+                        visited[curr] = true;
+                        cycle.push(curr + 1);
+                        curr = perm[curr] - 1;
+                    }
+                    if (cycle.length > 1 || n === 1) cycles.push(cycle);
+                }
+            }
+
+            const container = document.createElement('div');
+            container.className = 'flex flex-wrap justify-center gap-2 px-4 math-font font-extrabold text-rose-600';
+            const fontSize = density === 'detail' ? 'text-2xl' : density === 'normal' ? 'text-sm' : 'text-[11px]';
+            
+            if (cycles.length === 0) {
+                container.innerHTML = '<span class="text-slate-300">id</span>';
+            } else {
+                cycles.forEach(c => {
+                    const span = document.createElement('span');
+                    span.className = fontSize;
+                    span.textContent = `(${c.join(' ')})`;
+                    container.appendChild(span);
+                });
+            }
+            card.appendChild(container);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
