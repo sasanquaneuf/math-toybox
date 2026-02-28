@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>分配法則わからせ君</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+            width: 100%; height: 100%;
+            touch-action: none;
+            font-family: 'Inter', sans-serif;
+            background-color: #fcfcfc;
+        }
+
+        .block-unit {
+            transition: background-color 0.5s ease;
+            background-color: #f8fafc;
+            border: 0.5px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        @keyframes cut-flash {
+            0% { background-color: #3b82f6; opacity: 1; }
+            100% { background-color: transparent; opacity: 0; }
+        }
+        
+        .cut-line-v {
+            position: absolute;
+            right: -1.5px; top: 0; bottom: 0;
+            width: 3px;
+            background-color: #3b82f6;
+            z-index: 20;
+            pointer-events: none;
+            box-shadow: 0 0 10px #3b82f6;
+            animation: cut-flash 0.6s ease-out forwards;
+        }
+
+        .cut-line-h {
+            position: absolute;
+            bottom: -1.5px; left: 0; right: 0;
+            height: 3px;
+            background-color: #3b82f6;
+            z-index: 20;
+            pointer-events: none;
+            box-shadow: 0 0 10px #3b82f6;
+            animation: cut-flash 0.6s ease-out forwards;
+        }
+
+        .num-btn {
+            transition: all 0.2s;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.2rem;
+            user-select: none;
+        }
+        .num-btn:active {
+            transform: scale(0.9);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .num-btn.can-split {
+            color: #1e293b;
+            font-weight: 600;
+            background-color: #fff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .num-btn.is-one {
+            color: #cbd5e1;
+            cursor: default;
+        }
+
+        #rect-frame {
+            display: flex;
+            flex-direction: column;
+            gap: 0px;
+            background-color: #e2e8f0;
+            padding: 1px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .row {
+            display: flex;
+            gap: 0px;
+            width: 100%;
+        }
+
+        .label-text {
+            pointer-events: none;
+            font-size: clamp(12px, 4.5vw, 24px); 
+            font-weight: 700;
+            opacity: 0.9;
+            color: #1e293b;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .area-unit {
+            font-size: 0.6em;
+            margin-top: 2px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .modal-overlay {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col items-center">
+
+    <header class="flex-none w-full max-w-2xl flex items-center justify-between px-6 py-6 z-10">
+        <button id="open-settings" class="p-2 text-slate-400 hover:text-slate-600 transition-colors" aria-label="設定">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <div class="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">DISTRIBUTIVE LAW</div>
+        <button id="reset-btn" class="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            RESET
+        </button>
+    </header>
+
+    <main class="flex-1 w-full max-w-2xl flex flex-col items-center justify-start p-4 gap-8">
+        
+        <!-- 数式エリア -->
+        <div id="equation-container" class="font-light flex flex-wrap items-center justify-center gap-y-4 px-4 min-h-[120px] text-center leading-snug">
+            <!-- JSで動的にフォントサイズと数式を描画 -->
+        </div>
+
+        <!-- 図形エリア -->
+        <div class="relative w-full aspect-square max-w-[420px] flex items-center justify-center bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+            <div id="visual-container" class="w-full h-full flex items-center justify-center">
+                <div id="rect-frame">
+                    <!-- JSで描画 -->
+                </div>
+            </div>
+        </div>
+
+        <div class="text-slate-400 text-[11px] font-medium tracking-wider text-center leading-relaxed">
+            数字をタップして分解。1×1になるまで刻めます。<br>
+            設定から単位（m, cm, e_i...）を追加できます。
+        </div>
+
+    </main>
+
+    <!-- 設定モーダル -->
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-overlay opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-80 max-w-[90%]">
+            <h3 class="text-xs font-bold text-slate-400 mb-6 tracking-widest text-center uppercase">Unit Settings</h3>
+            <div class="grid grid-cols-2 gap-2" id="unit-options">
+                <!-- JSで生成 -->
+            </div>
+            <button id="close-settings" class="mt-6 w-full py-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors">閉じる</button>
+        </div>
+    </div>
+
+    <script>
+        const unitConfigs = {
+            'none': { lenA: '', lenB: '', area: '', symbol: '×' },
+            'mm': { lenA: 'mm', lenB: 'mm', area: 'mm²', symbol: '×' },
+            'cm': { lenA: 'cm', lenB: 'cm', area: 'cm²', symbol: '×' },
+            'm': { lenA: 'm', lenB: 'm', area: 'm²', symbol: '×' },
+            'km': { lenA: 'km', lenB: 'km', area: 'km²', symbol: '×' },
+            'tensor': { lenA: 'e_i', lenB: 'e_j', area: 'e_i ⊗ e_j', symbol: '⊗' }
+        };
+
+        let currentUnitKey = 'none';
+        let listA = [5];
+        let listB = [4];
+        let lastSplit = { dimension: null, index: -1 };
+
+        function init() {
+            document.getElementById('reset-btn').onclick = reset;
+            document.getElementById('open-settings').onclick = toggleModal;
+            document.getElementById('close-settings').onclick = toggleModal;
+            
+            const optionsContainer = document.getElementById('unit-options');
+            Object.keys(unitConfigs).forEach(key => {
+                const btn = document.createElement('button');
+                btn.className = 'py-3 border-2 border-slate-50 rounded-xl text-xs font-bold text-slate-500 hover:border-blue-400 hover:text-blue-500 transition-all active:scale-95 bg-slate-50';
+                btn.textContent = key === 'none' ? 'なし' : (key === 'tensor' ? 'e_i ⊗ e_j' : key);
+                btn.onclick = () => {
+                    currentUnitKey = key;
+                    toggleModal();
+                    render();
+                };
+                optionsContainer.appendChild(btn);
+            });
+
+            reset();
+        }
+
+        function toggleModal() {
+            const modal = document.getElementById('settings-modal');
+            const isOpen = modal.classList.contains('opacity-100');
+            modal.classList.toggle('opacity-0', isOpen);
+            modal.classList.toggle('pointer-events-none', isOpen);
+            modal.classList.toggle('opacity-100', !isOpen);
+            modal.classList.toggle('pointer-events-auto', !isOpen);
+        }
+
+        function reset() {
+            // 初期値は2〜7
+            const a = Math.floor(Math.random() * 6) + 2; 
+            const b = Math.floor(Math.random() * 6) + 2; 
+            listA = [a];
+            listB = [b];
+            lastSplit = { dimension: null, index: -1 };
+            render();
+        }
+
+        function handleSplit(dim, index) {
+            const list = dim === 'A' ? listA : listB;
+            const val = list[index];
+            if (val <= 1) return;
+
+            // 1からval-1までの範囲でランダムに分割
+            const splitPoint = Math.floor(Math.random() * (val - 1)) + 1;
+            list.splice(index, 1, splitPoint, val - splitPoint);
+            
+            lastSplit = { dimension: dim, index: index };
+            render();
+        }
+
+        function render() {
+            renderEquation();
+            renderVisuals();
+        }
+
+        function renderEquation() {
+            const container = document.getElementById('equation-container');
+            container.innerHTML = '';
+            const config = unitConfigs[currentUnitKey];
+
+            // 単位があるときは数式の文字を小さくする
+            if (currentUnitKey === 'none') {
+                container.className = "text-3xl sm:text-4xl font-light flex flex-wrap items-center justify-center gap-y-4 px-4 min-h-[120px] text-center leading-snug";
+            } else {
+                container.className = "text-xl sm:text-2xl font-light flex flex-wrap items-center justify-center gap-y-4 px-4 min-h-[120px] text-center leading-snug";
+            }
+
+            function createGroup(list, dim, unit) {
+                const groupSpan = document.createElement('span');
+                groupSpan.className = 'inline-flex items-center';
+                
+                if (list.length > 1) {
+                    const lParen = document.createElement('span');
+                    lParen.textContent = '(';
+                    lParen.className = 'text-slate-300 mr-1 font-light';
+                    groupSpan.appendChild(lParen);
+                }
+                
+                list.forEach((val, idx) => {
+                    const btn = document.createElement('span');
+                    const unitStr = unit ? `<span class="text-[0.6em] ml-0.5 opacity-40 font-normal">${unit}</span>` : "";
+                    btn.innerHTML = `<span>${val}</span>${unitStr}`;
+                    btn.className = `num-btn mx-0.5 ${val > 1 ? 'can-split' : 'is-one'}`;
+                    
+                    if (val > 1) {
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            handleSplit(dim, idx);
+                        };
+                    }
+                    groupSpan.appendChild(btn);
+
+                    if (idx < list.length - 1) {
+                        const plus = document.createElement('span');
+                        plus.textContent = '+';
+                        plus.className = 'text-slate-200 mx-0.5 scale-75 font-normal';
+                        groupSpan.appendChild(plus);
+                    }
+                });
+
+                if (list.length > 1) {
+                    const rParen = document.createElement('span');
+                    rParen.textContent = ')';
+                    rParen.className = 'text-slate-300 ml-1 font-light';
+                    groupSpan.appendChild(rParen);
+                }
+                return groupSpan;
+            }
+
+            container.appendChild(createGroup(listA, 'A', config.lenA));
+            const times = document.createElement('span');
+            times.textContent = config.symbol;
+            times.className = 'text-slate-200 mx-4 font-normal scale-90';
+            container.appendChild(times);
+            container.appendChild(createGroup(listB, 'B', config.lenB));
+        }
+
+        function renderVisuals() {
+            const frame = document.getElementById('rect-frame');
+            frame.innerHTML = '';
+            const config = unitConfigs[currentUnitKey];
+
+            const sumA = listA.reduce((x, y) => x + y, 0);
+            const sumB = listB.reduce((x, y) => x + y, 0);
+
+            frame.style.aspectRatio = `${sumA} / ${sumB}`;
+            if (sumA >= sumB) {
+                frame.style.width = '100%';
+                frame.style.height = 'auto';
+            } else {
+                frame.style.width = 'auto';
+                frame.style.height = '100%';
+            }
+
+            listB.forEach((valB, idxB) => {
+                const row = document.createElement('div');
+                row.className = 'row';
+                row.style.flex = `${valB}`; 
+                
+                listA.forEach((valA, idxA) => {
+                    const rect = document.createElement('div');
+                    rect.className = `block-unit`;
+                    rect.style.flex = `${valA}`;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'label-text';
+                    const areaUnit = config.area ? `<div class="area-unit">${config.area}</div>` : "";
+                    // 1x1でも「1」を表示
+                    label.innerHTML = `<div>${valA * valB}</div>${areaUnit}`;
+                    rect.appendChild(label);
+
+                    // 切断箇所のハイライト
+                    if (lastSplit.dimension === 'A' && idxA === lastSplit.index) {
+                        const line = document.createElement('div');
+                        line.className = 'cut-line-v';
+                        rect.appendChild(line);
+                    }
+                    if (lastSplit.dimension === 'B' && idxB === lastSplit.index) {
+                        const line = document.createElement('div');
+                        line.className = 'cut-line-h';
+                        rect.appendChild(line);
+                    }
+                    
+                    row.appendChild(rect);
+                });
+                frame.appendChild(row);
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
