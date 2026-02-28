@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>このコンテンツについて</title>
+    
+    <!-- GitHub風のスタイルシート -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+    
+    <style>
+        /* ページ全体のベース設定。システムのダークモード/ライトモードに合わせて背景色を切り替え */
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #0d1117; /* GitHub Darkテーマの背景色 */
+            }
+        }
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: #ffffff;
+            }
+        }
+
+        /* スマホ向けの余白調整 */
+        @media (max-width: 767px) {
+            body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <article id="content" class="markdown-body"></article>
+    <script type="text/markdown" id="raw-markdown">
+# このコンテンツについて
+
+数学的な事象を体験できるようなコンテンツの置き場です。  
+数学教育には様々な側面がありますが、その中で「色々な場面で現れる数学的事象というべきものを経験的に理解すること」に焦点をあてて、操作・慣れというような部分で、「数学を触っていく」ことのできるコンテンツを作りたいと思っていました。
+現在はAIが発展して、てきとうな指示をAIに与えることによって、私が考えていたイメージを実際に構成することができるようになりました。そのような物を置いています。
+
+はじめにvibe codingによって作成したものについては、その指示の内容をセットで置いています。
+
+feedbackは[issue](https://github.com/sasanquaneuf/math-toybox/issues)や[xのアカウント](https://x.com/sasanquaneuf_) などにお願いします。
+
+[掛け算の練習](./apps/multiple.html)  [作成会話](./coding/multiple.html)
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. Markdownのテキストデータを取得
+            const markdownText = document.getElementById('raw-markdown').textContent;
+            
+            // 2. marked.jsを使ってMarkdownをHTMLに変換し、表示エリアに流し込む
+            document.getElementById('content').innerHTML = marked.parse(markdownText);
+
+            // 3. リンクを別タブで開くように設定
+            document.querySelectorAll('#content a').forEach(link => {
+                link.setAttribute('target', '_blank');
+                // セキュリティ対策として noopener noreferrer を付与
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <!-- ズームとスケーリングを完全に禁止 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>かけざん</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* スクロールやバウンスを完全に無効化する強力なリセット */
+        html, body {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            touch-action: none; /* スワイプなどを禁止 */
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+        }
+
+        /* Number input のスピンボタンを非表示にする */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            /* iOSでの自動ズームを防ぐため16px以上を強制 */
+            font-size: 2rem !important; 
+        }
+
+        .dot {
+            transition: background-color 0.4s ease, transform 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .modal-bg {
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+        }
+    </style>
+</head>
+<body class="text-slate-800 select-none flex flex-col items-center justify-start w-full h-full">
+
+    <!-- ヘッダー: 縦幅を最小限に抑える -->
+    <header class="flex-none w-full max-w-2xl flex items-center justify-between px-3 py-2 text-slate-400 z-10">
+        <button id="settings-btn" class="p-2 -ml-2 hover:text-slate-600 transition-colors rounded-full active:bg-slate-100" aria-label="設定">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+
+        <div class="flex items-center gap-2 font-medium tracking-wider">
+            <span class="text-xs">SCORE</span>
+            <span id="score-display" class="text-lg text-slate-600 w-6 text-right transition-all duration-300">0</span>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ: 余った高さをすべて使い、縦幅が足りない場合は縮小する -->
+    <main class="flex-1 w-full max-w-2xl flex flex-col items-center justify-center min-h-0 px-2 pb-2">
+        
+        <!-- 図形（アレイ図）エリア: 画面の高さに応じて縮小する -->
+        <div class="relative flex-1 flex flex-col items-center justify-center min-h-[120px] max-h-[260px] w-full">
+            
+            <button id="rotate-btn" class="absolute right-2 top-0 sm:right-10 sm:top-2 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-100 transition-all active:scale-90 z-10 rounded-full" aria-label="回転">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                    <polyline points="21 3 21 8 16 8"></polyline>
+                </svg>
+            </button>
+
+            <!-- グリッドコンテナ -->
+            <div id="grid-container" class="grid gap-1 transition-transform duration-700 ease-in-out">
+                <!-- JavaScriptでマス目が生成されます -->
+            </div>
+        </div>
+
+        <!-- 数式と入力エリア: 高さを固定し、一番下に配置 -->
+        <div id="formula-container" class="flex-none text-4xl sm:text-5xl font-light flex items-center justify-center gap-1 sm:gap-3 transition-colors duration-500 mt-2 mb-2">
+            <span id="val-a" class="w-10 sm:w-12 text-right">?</span>
+            <span class="text-slate-300 font-normal scale-75">×</span>
+            <span id="val-b" class="w-10 sm:w-12 text-left">?</span>
+            <span class="text-slate-300 font-normal scale-75">=</span>
+            
+            <div class="relative flex items-center ml-1">
+                <input type="number" id="answer" inputmode="numeric" pattern="[0-9]*"
+                    class="w-16 sm:w-20 bg-transparent text-center border-b-4 border-slate-200 focus:border-slate-500 outline-none transition-all duration-300 rounded-none placeholder:text-slate-200 px-0 pb-1 h-12">
+                
+                <button id="submit-btn" class="absolute -right-10 sm:-right-12 p-2 text-slate-300 hover:text-slate-600 transition-colors" aria-label="確定">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 設定モーダルダイアログ -->
+    <div id="settings-modal" class="fixed inset-0 modal-bg flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        <div class="bg-white rounded-2xl p-5 w-11/12 max-w-xs shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+            <h2 class="text-base font-semibold mb-4 text-slate-800 text-center">出題モード</h2>
+            
+            <div class="flex flex-col gap-2">
+                <button onclick="setMode('random')" class="w-full py-2.5 px-4 rounded-xl border-2 border-slate-200 font-medium text-slate-600 hover:border-emerald-500 hover:text-emerald-600 transition-colors text-sm" id="btn-mode-random">
+                    ランダム
+                </button>
+                
+                <div class="relative w-full group">
+                    <button onclick="startSequenceMode()" class="w-full py-2.5 px-4 rounded-xl border-2 border-slate-200 font-medium text-slate-600 group-hover:border-blue-500 group-hover:text-blue-600 transition-colors text-left flex justify-between items-center text-sm" id="btn-mode-sequence">
+                        <span>順番に出題</span>
+                        <span class="text-slate-400 flex items-center gap-1">
+                            <select id="dan-select" class="bg-transparent text-slate-700 font-bold outline-none cursor-pointer" onchange="startSequenceMode(event)">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                            </select>
+                            の段 ▼
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-center">
+                <button onclick="closeSettings()" class="py-2 px-6 rounded-full bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-colors text-xs">
+                    閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'random';
+        let currentDan = 2;
+        let sequenceStep = 1;
+        
+        let currentA = 0;
+        let currentB = 0;
+        let currentRotation = 0;
+        let score = 0;
+        let isAnimating = false;
+
+        function init() {
+            const input = document.getElementById('answer');
+            const submitBtn = document.getElementById('submit-btn');
+            const rotateBtn = document.getElementById('rotate-btn');
+            const settingsBtn = document.getElementById('settings-btn');
+
+            submitBtn.addEventListener('click', checkAnswer);
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkAnswer();
+            });
+
+            rotateBtn.addEventListener('click', rotateGrid);
+            settingsBtn.addEventListener('click', openSettings);
+            
+            // 画面タッチでフォーカスを戻す（ただしボタン等は除く）
+            document.body.addEventListener('touchstart', (e) => {
+                const modal = document.getElementById('settings-modal');
+                const isModalOpen = modal.classList.contains('opacity-100');
+                
+                if(!isAnimating && !isModalOpen && e.target.closest('button') === null && e.target.id !== 'answer' && e.target.tagName !== 'SELECT') {
+                    // iOS Safariのスクロール挙動を防ぐためのハック
+                    e.preventDefault();
+                    input.focus();
+                }
+            }, { passive: false }); // preventDefaultを許可
+
+            updateModeUI();
+            generateQuestion();
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'pointer-events-auto');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('opacity-100', 'pointer-events-auto');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => document.getElementById('answer').focus(), 300);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            updateModeUI();
+            score = 0;
+            document.getElementById('score-display').textContent = score;
+            generateQuestion();
+        }
+
+        function startSequenceMode(e) {
+            if (e) e.stopPropagation(); // ボタンクリックイベントの伝播を防ぐ
+            currentMode = 'sequence';
+            currentDan = parseInt(document.getElementById('dan-select').value, 10);
+            sequenceStep = 1;
+            updateModeUI();
+            score = 0;
+            document.getElementById('score-display').textContent = score;
+            generateQuestion();
+        }
+
+        function updateModeUI() {
+            const btnRandom = document.getElementById('btn-mode-random');
+            const btnSequence = document.getElementById('btn-mode-sequence');
+            
+            if (currentMode === 'random') {
+                btnRandom.classList.add('border-emerald-500', 'text-emerald-600', 'bg-emerald-50');
+                btnRandom.classList.remove('border-slate-200', 'text-slate-600');
+                
+                btnSequence.classList.remove('border-blue-500', 'text-blue-600', 'bg-blue-50');
+                btnSequence.classList.add('border-slate-200', 'text-slate-600');
+            } else {
+                btnRandom.classList.remove('border-emerald-500', 'text-emerald-600', 'bg-emerald-50');
+                btnRandom.classList.add('border-slate-200', 'text-slate-600');
+                
+                btnSequence.classList.add('border-blue-500', 'text-blue-600', 'bg-blue-50');
+                btnSequence.classList.remove('border-slate-200', 'text-slate-600');
+            }
+        }
+
+        function generateQuestion() {
+            isAnimating = false;
+            
+            if (currentMode === 'random') {
+                currentA = Math.floor(Math.random() * 9) + 1;
+                currentB = Math.floor(Math.random() * 9) + 1;
+            } else {
+                currentA = currentDan;
+                currentB = sequenceStep;
+            }
+            
+            currentRotation = 0;
+            
+            document.getElementById('val-a').textContent = currentA;
+            document.getElementById('val-b').textContent = currentB;
+            
+            const input = document.getElementById('answer');
+            input.value = '';
+            input.disabled = false;
+            
+            if (!document.getElementById('settings-modal').classList.contains('opacity-100')) {
+                input.focus();
+            }
+            
+            const formula = document.getElementById('formula-container');
+            formula.classList.remove('text-emerald-500', 'text-rose-400');
+            formula.classList.add('text-slate-800');
+            
+            input.classList.remove('text-emerald-500', 'text-rose-400', 'border-transparent', 'border-rose-300');
+            input.classList.add('border-slate-200');
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.classList.remove('text-emerald-400', 'text-rose-400');
+            submitBtn.classList.add('text-slate-300');
+            
+            drawGrid();
+        }
+
+        function drawGrid() {
+            const container = document.getElementById('grid-container');
+            container.innerHTML = '';
+            container.style.transform = `rotate(${currentRotation}deg)`;
+            
+            container.style.gridTemplateColumns = `repeat(${currentA}, minmax(0, 1fr))`;
+            
+            const total = currentA * currentB;
+            // 画面高さが非常に狭い場合を考慮し、ドットサイズをさらに小さく
+            for(let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] bg-slate-400 rounded-sm shadow-sm';
+                container.appendChild(dot);
+            }
+        }
+
+        function rotateGrid() {
+            if (isAnimating) return;
+            currentRotation += 90;
+            document.getElementById('grid-container').style.transform = `rotate(${currentRotation}deg)`;
+        }
+
+        function checkAnswer() {
+            if (isAnimating) return;
+            
+            const input = document.getElementById('answer');
+            const val = parseInt(input.value, 10);
+            
+            if (isNaN(val)) {
+                input.focus();
+                return;
+            }
+
+            const correct = currentA * currentB;
+            const formula = document.getElementById('formula-container');
+            const submitBtn = document.getElementById('submit-btn');
+            const dots = document.querySelectorAll('.dot');
+            
+            isAnimating = true;
+            input.disabled = true;
+
+            if (val === correct) {
+                // 正解
+                score++;
+                updateScore();
+
+                formula.classList.remove('text-slate-800', 'text-rose-400');
+                formula.classList.add('text-emerald-500');
+                
+                input.classList.remove('border-slate-200', 'border-rose-300');
+                input.classList.add('text-emerald-500', 'border-transparent');
+                
+                submitBtn.classList.remove('text-slate-300');
+                submitBtn.classList.add('text-emerald-400');
+                
+                dots.forEach((dot, index) => {
+                    setTimeout(() => {
+                        dot.classList.remove('bg-slate-400', 'bg-rose-300');
+                        dot.classList.add('bg-emerald-400', 'scale-110');
+                    }, index * (200 / dots.length)); // エフェクトを少し高速化
+                });
+                
+                setTimeout(() => {
+                    if (currentMode === 'sequence') {
+                        sequenceStep++;
+                        if (sequenceStep > 9) {
+                            sequenceStep = 1;
+                        }
+                    }
+                    generateQuestion();
+                }, 1000);
+
+            } else {
+                // 不正解
+                formula.classList.remove('text-slate-800');
+                formula.classList.add('text-rose-400');
+                
+                input.classList.remove('border-slate-200');
+                input.classList.add('text-rose-400', 'border-rose-300');
+                
+                submitBtn.classList.remove('text-slate-300');
+                submitBtn.classList.add('text-rose-400');
+
+                formula.classList.add('animate-shake');
+
+                dots.forEach(dot => {
+                    dot.classList.remove('bg-slate-400');
+                    dot.classList.add('bg-rose-300');
+                });
+                
+                setTimeout(() => {
+                    formula.classList.remove('animate-shake', 'text-rose-400');
+                    formula.classList.add('text-slate-800');
+                    
+                    input.classList.remove('text-rose-400', 'border-rose-300');
+                    input.classList.add('border-slate-200');
+                    input.value = '';
+                    input.disabled = false;
+                    
+                    submitBtn.classList.remove('text-rose-400');
+                    submitBtn.classList.add('text-slate-300');
+
+                    dots.forEach(dot => {
+                        dot.classList.remove('bg-rose-300');
+                        dot.classList.add('bg-slate-400');
+                    });
+                    
+                    input.focus();
+                    isAnimating = false;
+                }, 800);
+            }
+        }
+
+        function updateScore() {
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.textContent = score;
+            
+            scoreDisplay.style.transform = 'scale(1.3)';
+            scoreDisplay.style.color = '#10b981';
+            
+            setTimeout(() => {
+                scoreDisplay.style.transform = 'scale(1)';
+                scoreDisplay.style.color = '#475569';
+            }, 300);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
