@@ -201,6 +201,10 @@
                     <span class="font-bold text-base mb-1">レベル 4</span>
                     <span class="text-xs opacity-80 font-normal">図なし・通分アクションなしの比較</span>
                 </button>
+                <button onclick="setLevel('level5')" class="level-btn w-full py-3 px-4 rounded-xl border-2 font-medium transition-colors text-sm text-left flex flex-col" id="btn-level-level5">
+                    <span class="font-bold text-base mb-1">レベル 5</span>
+                    <span class="text-xs opacity-80 font-normal">1より大きい分数の比較 (例: 5/3 と 7/4)</span>
+                </button>
             </div>
 
             <div class="mt-6 flex justify-center">
@@ -286,8 +290,8 @@
         }
 
         function updateLevelUI() {
-            const levels = ['level1', 'level2', 'level3', 'level4'];
-            const levelNames = { 'level1': 'レベル1', 'level2': 'レベル2', 'level3': 'レベル3', 'level4': 'レベル4' };
+            const levels = ['level1', 'level2', 'level3', 'level4', 'level5'];
+            const levelNames = { 'level1': 'レベル1', 'level2': 'レベル2', 'level3': 'レベル3', 'level4': 'レベル4', 'level5': 'レベル5' };
             
             document.getElementById('level-display').textContent = levelNames[currentLevel];
 
@@ -342,6 +346,33 @@
                 
                 currentNumA = originalNumA = getRandomCoprime(dA);
                 currentNumB = originalNumB = getRandomCoprime(dB);
+            } else if (currentLevel === 'level5') {
+                // 1より大きい分数、かつ差が1以下（共通の整数部分を持たせる）
+                isTsuubunDone = true;  // 最初から解答ボタンを表示する
+                
+                let dA, dB;
+                let attempts = 0;
+                // LCMが大きすぎず、互いに異なる分母を選ぶ
+                do {
+                    dA = Math.floor(Math.random() * 5) + 2; // 2..6
+                    dB = Math.floor(Math.random() * 5) + 2; // 2..6
+                    attempts++;
+                } while ((dA === dB || lcm(dA, dB) > 24) && attempts < 100);
+                
+                if (dA === dB) { dA = 2; dB = 3; }
+
+                currentDenA = originalDenA = dA;
+                currentDenB = originalDenB = dB;
+                
+                // 1〜3の共通の整数部分を持たせることで、差を必ず1未満にする
+                const intPart = Math.floor(Math.random() * 3) + 1;
+                
+                // 真分数の部分
+                const fracA = getRandomCoprime(dA);
+                const fracB = getRandomCoprime(dB);
+                
+                currentNumA = originalNumA = intPart * dA + fracA;
+                currentNumB = originalNumB = intPart * dB + fracB;
             }
 
             // 最後に50%の確率で左右(AとB)を入れ替える（<と>の出現頻度を均等にするため）
@@ -362,8 +393,8 @@
             document.querySelector('main').scrollTop = 0;
 
             const chartsContainer = document.getElementById('charts-container');
-            if (currentLevel === 'level4') {
-                // レベル4は図解を非表示
+            if (currentLevel === 'level4' || currentLevel === 'level5') {
+                // レベル4と5は図解を非表示
                 chartsContainer.classList.add('hidden');
                 chartsContainer.classList.remove('flex');
             } else {
