@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>分数の大小比較</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            touch-action: manipulation; /* スクロールは許可しつつ、ダブルタップズームなどを防ぐ */
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .modal-bg {
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+        }
+        
+        /* グラフのアニメーション用 */
+        .chart-target {
+            transition: color 0.4s ease, background-color 0.4s ease, fill 0.4s ease;
+        }
+        
+        /* 要素のフェード・スケール用 */
+        .fade-scale {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-slate-800 select-none flex flex-col items-center justify-start w-full h-full">
+
+    <!-- ヘッダー -->
+    <header class="flex-none w-full max-w-2xl flex items-center justify-between px-3 py-2 text-slate-400 z-10">
+        <button id="settings-btn" class="p-2 -ml-2 hover:text-slate-600 transition-colors rounded-full active:bg-slate-100" aria-label="設定">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+
+        <div class="flex items-center gap-2 font-medium tracking-wider">
+            <span class="text-xs font-bold text-slate-500 mr-2 bg-slate-100 px-2 py-1 rounded-md" id="level-display">レベル1</span>
+            <span class="text-xs">SCORE</span>
+            <span id="score-display" class="text-lg text-slate-600 w-6 text-right transition-all duration-300">0</span>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="flex-1 w-full max-w-2xl overflow-y-auto px-2 pb-10 pt-2 transition-opacity duration-300" id="main-content" style="opacity: 0;">
+        <div class="min-h-full flex flex-col items-center justify-center">
+            
+            <!-- 図解エリア (円と線分) -->
+            <div id="charts-container" class="w-full flex justify-center items-center gap-4 sm:gap-12 px-2 shrink-0 transition-all duration-500">
+                <!-- 分数A の図解 -->
+                <div class="flex flex-col items-center gap-4 w-5/12 max-w-[160px]">
+                    <div id="pie-a" class="w-20 h-20 sm:w-32 sm:h-32"></div>
+                    <div id="bar-a" class="w-full"></div>
+                </div>
+                
+                <div class="text-slate-300 font-light text-2xl flex-none"></div>
+                
+                <!-- 分数B の図解 -->
+                <div class="flex flex-col items-center gap-4 w-5/12 max-w-[160px]">
+                    <div id="pie-b" class="w-20 h-20 sm:w-32 sm:h-32"></div>
+                    <div id="bar-b" class="w-full"></div>
+                </div>
+            </div>
+
+            <!-- 数式エリア -->
+            <div id="formula-container" class="flex-none flex items-start justify-center gap-4 sm:gap-8 transition-colors duration-500 text-slate-800 my-6 min-h-[120px]">
+                
+                <!-- 分数A の式 -->
+                <div class="flex flex-col items-center w-16 sm:w-20">
+                <div class="flex flex-col items-center justify-center font-medium text-4xl sm:text-5xl w-14 transition-colors duration-500 text-slate-800" id="orig-frac-a">
+                    <span id="orig-num-a" class="border-b-[3px] border-current w-full text-center pb-1 mb-1 transition-transform duration-300 inline-block"></span>
+                    <span id="orig-den-a" class="w-full text-center transition-transform duration-300 inline-block"></span>
+                </div>
+                <!-- 通分後エリア -->
+                <div id="tsuubun-area-a" class="flex flex-col items-center w-full max-h-0 opacity-0 overflow-hidden transition-all duration-500 ease-in-out">
+                    <div class="tsuubun-equal font-bold my-2 text-xl transform rotate-90 text-slate-300 transition-colors duration-500">=</div>
+                    <div class="flex flex-col items-center justify-center font-medium text-3xl sm:text-4xl w-12 text-blue-500 transition-colors duration-500" id="tsuubun-frac-a">
+                        <span id="tsuubun-num-a" class="border-b-[2px] border-current w-full text-center pb-1 mb-1 transition-transform duration-300 inline-block"></span>
+                        <span id="tsuubun-den-a" class="w-full text-center transition-transform duration-300 inline-block"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 解答表示ボックス -->
+            <div class="flex flex-col items-center mt-2">
+                <div id="answer-box" class="w-16 h-16 sm:w-20 sm:h-20 border-4 border-slate-200 rounded-xl flex items-center justify-center text-4xl sm:text-5xl text-slate-300 bg-white transition-all duration-300 font-medium shadow-sm z-10">
+                </div>
+            </div>
+            
+                <!-- 分数B の式 -->
+                <div class="flex flex-col items-center w-16 sm:w-20">
+                    <!-- 通分前 -->
+                    <div class="flex flex-col items-center justify-center font-medium text-4xl sm:text-5xl w-14 transition-colors duration-500 text-slate-800" id="orig-frac-b">
+                        <span id="orig-num-b" class="border-b-[3px] border-current w-full text-center pb-1 mb-1 transition-transform duration-300 inline-block"></span>
+                        <span id="orig-den-b" class="w-full text-center transition-transform duration-300 inline-block"></span>
+                    </div>
+                    <!-- 通分後エリア -->
+                    <div id="tsuubun-area-b" class="flex flex-col items-center w-full max-h-0 opacity-0 overflow-hidden transition-all duration-500 ease-in-out">
+                        <div class="tsuubun-equal font-bold my-2 text-xl transform rotate-90 text-slate-300 transition-colors duration-500">=</div>
+                        <div class="flex flex-col items-center justify-center font-medium text-3xl sm:text-4xl w-12 text-blue-500 transition-colors duration-500" id="tsuubun-frac-b">
+                            <span id="tsuubun-num-b" class="border-b-[2px] border-current w-full text-center pb-1 mb-1 transition-transform duration-300 inline-block"></span>
+                            <span id="tsuubun-den-b" class="w-full text-center transition-transform duration-300 inline-block"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- アクションエリア（通分ボタン or 解答ボタン） -->
+            <div class="relative w-full h-28 flex shrink-0 justify-center items-start pt-1 mt-2 z-10">
+                
+                <!-- 通分ボタン (レベル3用) -->
+                <button id="tsuubun-btn" onclick="doTsuubun()" class="fade-scale absolute w-48 h-16 bg-blue-500 text-white rounded-2xl text-lg font-bold shadow-[0_4px_0_rgb(29,78,216)] hover:bg-blue-400 hover:translate-y-1 hover:shadow-[0_0px_0_rgb(29,78,216)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2 tracking-widest opacity-0 pointer-events-none scale-90 z-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"></path>
+                    </svg>
+                    通分する
+                </button>
+
+                <!-- 解答ボタン群 -->
+                <div id="compare-btns" class="fade-scale absolute flex gap-3 sm:gap-5 w-full justify-center">
+                    
+                    <!-- < ボタンとテキスト -->
+                    <div class="flex flex-col items-center gap-1.5">
+                        <button onclick="checkAnswer('<')" class="w-20 h-16 sm:w-24 sm:h-20 bg-white shadow-sm border-2 border-slate-200 rounded-2xl text-3xl font-bold text-slate-500 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all flex items-center justify-center">
+                            &lt;
+                        </button>
+                        <div class="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">
+                            小なり<br>左が小さい
+                        </div>
+                    </div>
+                    
+                    <!-- = ボタン -->
+                    <div class="flex flex-col items-center gap-1.5">
+                        <button onclick="checkAnswer('=')" class="w-20 h-16 sm:w-24 sm:h-20 bg-white shadow-sm border-2 border-slate-200 rounded-2xl text-3xl font-bold text-slate-500 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all flex items-center justify-center">
+                            =
+                        </button>
+                    </div>
+
+                    <!-- > ボタンとテキスト -->
+                    <div class="flex flex-col items-center gap-1.5">
+                        <button onclick="checkAnswer('>')" class="w-20 h-16 sm:w-24 sm:h-20 bg-white shadow-sm border-2 border-slate-200 rounded-2xl text-3xl font-bold text-slate-500 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all flex items-center justify-center">
+                            &gt;
+                        </button>
+                        <div class="text-[10px] sm:text-xs text-slate-400 text-center leading-tight">
+                            大なり<br>左が大きい
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </main>
+
+    <!-- 設定モーダルダイアログ -->
+    <div id="settings-modal" class="fixed inset-0 modal-bg flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        <div class="bg-white rounded-2xl p-5 w-11/12 max-w-xs shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content">
+            <h2 class="text-base font-bold mb-4 text-slate-800 text-center">レベル選択</h2>
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="setLevel('level1')" class="level-btn w-full py-3 px-4 rounded-xl border-2 font-medium transition-colors text-sm text-left flex flex-col" id="btn-level-level1">
+                    <span class="font-bold text-base mb-1">レベル 1</span>
+                    <span class="text-xs opacity-80 font-normal">分子が 1 の比較 (例: 1/2 と 1/3)</span>
+                </button>
+                <button onclick="setLevel('level2')" class="level-btn w-full py-3 px-4 rounded-xl border-2 font-medium transition-colors text-sm text-left flex flex-col" id="btn-level-level2">
+                    <span class="font-bold text-base mb-1">レベル 2</span>
+                    <span class="text-xs opacity-80 font-normal">分母が同じ比較 (例: 2/5 と 4/5)</span>
+                </button>
+                <button onclick="setLevel('level3')" class="level-btn w-full py-3 px-4 rounded-xl border-2 font-medium transition-colors text-sm text-left flex flex-col" id="btn-level-level3">
+                    <span class="font-bold text-base mb-1">レベル 3</span>
+                    <span class="text-xs opacity-80 font-normal">通分が必要な比較 (例: 2/3 と 3/4)</span>
+                </button>
+                <button onclick="setLevel('level4')" class="level-btn w-full py-3 px-4 rounded-xl border-2 font-medium transition-colors text-sm text-left flex flex-col" id="btn-level-level4">
+                    <span class="font-bold text-base mb-1">レベル 4</span>
+                    <span class="text-xs opacity-80 font-normal">図なし・通分アクションなしの比較</span>
+                </button>
+            </div>
+
+            <div class="mt-6 flex justify-center">
+                <button onclick="closeSettings()" class="py-2 px-6 rounded-full bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-colors text-xs">
+                    閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状態変数
+        let currentLevel = 'level1';
+        
+        // 現在画面に表示されている数値
+        let currentNumA = 1, currentDenA = 2;
+        let currentNumB = 1, currentDenB = 3;
+        
+        // レベル3用のオリジナル数値保持（通分前）
+        let originalNumA = 1, originalDenA = 2;
+        let originalNumB = 1, originalDenB = 3;
+        let isTsuubunDone = true;
+
+        let score = 0;
+        let isAnimating = false;
+
+        // 数学ユーティリティ関数
+        function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+        function lcm(a, b) { return (a * b) / gcd(a, b); }
+        
+        // 互いに素な分母に対する分子をランダム取得（既約分数を作るため）
+        function getRandomCoprime(den) {
+            let coprimes = [];
+            for (let i = 1; i < den; i++) {
+                if (gcd(i, den) === 1) coprimes.push(i);
+            }
+            if (coprimes.length === 0) return 1;
+            return coprimes[Math.floor(Math.random() * coprimes.length)];
+        }
+
+        let isInitialized = false;
+
+        function init() {
+            if (isInitialized) return;
+            isInitialized = true;
+
+            const settingsBtn = document.getElementById('settings-btn');
+            settingsBtn.addEventListener('click', openSettings);
+            
+            updateLevelUI();
+            generateQuestion();
+            
+            // 初期化が完了したらメインコンテンツをフェードイン
+            requestAnimationFrame(() => {
+                document.getElementById('main-content').style.opacity = '1';
+            });
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'pointer-events-auto');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settings-modal');
+            const content = document.getElementById('modal-content');
+            modal.classList.remove('opacity-100', 'pointer-events-auto');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+        }
+
+        function setLevel(level) {
+            currentLevel = level;
+            updateLevelUI();
+            score = 0;
+            document.getElementById('score-display').textContent = score;
+            generateQuestion();
+        }
+
+        function updateLevelUI() {
+            const levels = ['level1', 'level2', 'level3', 'level4'];
+            const levelNames = { 'level1': 'レベル1', 'level2': 'レベル2', 'level3': 'レベル3', 'level4': 'レベル4' };
+            
+            document.getElementById('level-display').textContent = levelNames[currentLevel];
+
+            levels.forEach(level => {
+                const btn = document.getElementById(`btn-level-${level}`);
+                if (level === currentLevel) {
+                    btn.className = `level-btn w-full py-3 px-4 rounded-xl border-2 font-medium transition-colors text-sm text-left flex flex-col border-emerald-500 text-emerald-700 bg-emerald-50`;
+                } else {
+                    btn.className = `level-btn w-full py-3 px-4 rounded-xl border-2 font-medium transition-colors text-sm text-left flex flex-col border-slate-200 text-slate-600 hover:border-emerald-300`;
+                }
+            });
+        }
+
+        function generateQuestion() {
+            isAnimating = false;
+            isTsuubunDone = true; // デフォルトは通分完了状態（ボタン等表示制御のため）
+            
+            if (currentLevel === 'level1') {
+                // 1/n の比較
+                currentNumA = originalNumA = 1;
+                currentNumB = originalNumB = 1;
+                currentDenA = originalDenA = Math.floor(Math.random() * 8) + 2; // 2..9
+                currentDenB = originalDenB = Math.floor(Math.random() * 8) + 2; // 2..9
+                
+            } else if (currentLevel === 'level2') {
+                // 分母が同じ比較
+                currentDenA = currentDenB = originalDenA = originalDenB = Math.floor(Math.random() * 7) + 3; // 3..9
+                currentNumA = originalNumA = Math.floor(Math.random() * (currentDenA - 1)) + 1;
+                currentNumB = originalNumB = Math.floor(Math.random() * (currentDenB - 1)) + 1;
+                
+            } else if (currentLevel === 'level3' || currentLevel === 'level4') {
+                // 通分が必要な比較（レベル3と4で共通の数値生成ロジック）
+                if (currentLevel === 'level3') {
+                    isTsuubunDone = false; // 通分ボタンを表示する
+                } else {
+                    isTsuubunDone = true;  // 最初から解答ボタンを表示する
+                }
+                
+                let dA, dB;
+                let attempts = 0;
+                // LCMが大きすぎず（描画限界考慮）、互いに異なる分母を選ぶ
+                do {
+                    dA = Math.floor(Math.random() * 5) + 2; // 2..6
+                    dB = Math.floor(Math.random() * 5) + 2; // 2..6
+                    attempts++;
+                } while ((dA === dB || lcm(dA, dB) > 24) && attempts < 100);
+                
+                if (dA === dB) { dA = 2; dB = 3; } // フェールセーフ
+
+                currentDenA = originalDenA = dA;
+                currentDenB = originalDenB = dB;
+                
+                currentNumA = originalNumA = getRandomCoprime(dA);
+                currentNumB = originalNumB = getRandomCoprime(dB);
+            }
+
+            // 最後に50%の確率で左右(AとB)を入れ替える（<と>の出現頻度を均等にするため）
+            if (Math.random() < 0.5) {
+                [originalNumA, originalNumB] = [originalNumB, originalNumA];
+                [originalDenA, originalDenB] = [originalDenB, originalDenA];
+                [currentNumA, currentNumB] = [currentNumB, currentNumA];
+                [currentDenA, currentDenB] = [currentDenB, currentDenA];
+            }
+
+            // 通分エリアをリセットして隠す
+            document.getElementById('tsuubun-area-a').classList.remove('max-h-40', 'opacity-100');
+            document.getElementById('tsuubun-area-a').classList.add('max-h-0', 'opacity-0');
+            document.getElementById('tsuubun-area-b').classList.remove('max-h-40', 'opacity-100');
+            document.getElementById('tsuubun-area-b').classList.add('max-h-0', 'opacity-0');
+
+            // スクロール位置を一番上に戻す
+            document.querySelector('main').scrollTop = 0;
+
+            const chartsContainer = document.getElementById('charts-container');
+            if (currentLevel === 'level4') {
+                // レベル4は図解を非表示
+                chartsContainer.classList.add('hidden');
+                chartsContainer.classList.remove('flex');
+            } else {
+                // それ以外のレベルは図解を表示
+                chartsContainer.classList.remove('hidden');
+                chartsContainer.classList.add('flex');
+                drawCharts();
+            }
+
+            updateFormulaDisplay();
+            updateActionUI();
+
+            // 解答ボックスとUIのリセット
+            const answerBox = document.getElementById('answer-box');
+            answerBox.textContent = '?';
+            
+            const formula = document.getElementById('formula-container');
+            formula.classList.remove('animate-shake');
+            
+            setFormulaColor('normal');
+            
+            answerBox.classList.remove('border-emerald-500', 'text-emerald-500', 'bg-emerald-50', 'border-rose-400', 'text-rose-400', 'bg-rose-50');
+            answerBox.classList.add('border-slate-200', 'text-slate-300', 'bg-white');
+        }
+
+        function updateFormulaDisplay() {
+            document.getElementById('orig-num-a').textContent = originalNumA;
+            document.getElementById('orig-den-a').textContent = originalDenA;
+            document.getElementById('orig-num-b').textContent = originalNumB;
+            document.getElementById('orig-den-b').textContent = originalDenB;
+            
+            if (isTsuubunDone && currentLevel === 'level3') {
+                document.getElementById('tsuubun-num-a').textContent = currentNumA;
+                document.getElementById('tsuubun-den-a').textContent = currentDenA;
+                document.getElementById('tsuubun-num-b').textContent = currentNumB;
+                document.getElementById('tsuubun-den-b').textContent = currentDenB;
+            }
+        }
+
+        function updateActionUI() {
+            const tsuubunBtn = document.getElementById('tsuubun-btn');
+            const compareBtns = document.getElementById('compare-btns');
+
+            if (currentLevel === 'level3' && !isTsuubunDone) {
+                // 通分前: 通分ボタンを表示、比較ボタンを隠す
+                tsuubunBtn.classList.remove('opacity-0', 'pointer-events-none', 'scale-90');
+                tsuubunBtn.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+                
+                compareBtns.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
+                compareBtns.classList.add('opacity-0', 'pointer-events-none', 'scale-90');
+            } else {
+                // 通分後、またはレベル1,2: 比較ボタンを表示、通分ボタンを隠す
+                tsuubunBtn.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
+                tsuubunBtn.classList.add('opacity-0', 'pointer-events-none', 'scale-90');
+                
+                compareBtns.classList.remove('opacity-0', 'pointer-events-none', 'scale-90');
+                compareBtns.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+            }
+        }
+
+        function doTsuubun() {
+            if (isTsuubunDone) return;
+            
+            const lcmVal = lcm(originalDenA, originalDenB);
+            
+            // 値の更新
+            currentDenA = currentDenB = lcmVal;
+            currentNumA = originalNumA * (lcmVal / originalDenA);
+            currentNumB = originalNumB * (lcmVal / originalDenB);
+            
+            isTsuubunDone = true;
+            updateActionUI();
+            
+            // 数式の更新
+            updateFormulaDisplay();
+            setFormulaColor('tsuubun');
+            
+            // エリアの展開
+            document.getElementById('tsuubun-area-a').classList.remove('max-h-0', 'opacity-0');
+            document.getElementById('tsuubun-area-a').classList.add('max-h-40', 'opacity-100');
+            document.getElementById('tsuubun-area-b').classList.remove('max-h-0', 'opacity-0');
+            document.getElementById('tsuubun-area-b').classList.add('max-h-40', 'opacity-100');
+            
+            // 下部にスクロールしてボタンを見えるようにする
+            setTimeout(() => {
+                const mainEl = document.querySelector('main');
+                mainEl.scrollTo({ top: mainEl.scrollHeight, behavior: 'smooth' });
+            }, 100);
+
+            // 数字が少し弾むアニメーションを追加
+            ['tsuubun-num-a', 'tsuubun-den-a', 'tsuubun-num-b', 'tsuubun-den-b'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.transform = 'scale(1.3)';
+                setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+            });
+
+            // グラフの更新（分割線が増える）
+            drawCharts();
+        }
+
+        function setFormulaColor(colorState) {
+            const origA = document.getElementById('orig-frac-a');
+            const origB = document.getElementById('orig-frac-b');
+            const tsubunA = document.getElementById('tsuubun-frac-a');
+            const tsubunB = document.getElementById('tsuubun-frac-b');
+            const equals = document.querySelectorAll('.tsuubun-equal');
+            
+            const els = [origA, origB, tsubunA, tsubunB];
+            
+            els.forEach(el => {
+                if(!el) return;
+                el.classList.remove('text-slate-800', 'text-rose-400', 'text-emerald-500', 'text-blue-500');
+                if (colorState === 'correct') el.classList.add('text-emerald-500');
+                else if (colorState === 'wrong') el.classList.add('text-rose-400');
+                else if ((colorState === 'tsuubun' || colorState === 'normal') && (el === tsubunA || el === tsubunB)) el.classList.add('text-blue-500');
+                else el.classList.add('text-slate-800');
+            });
+            
+            equals.forEach(el => {
+                el.classList.remove('text-slate-300', 'text-rose-400', 'text-emerald-500');
+                if (colorState === 'correct') el.classList.add('text-emerald-500');
+                else if (colorState === 'wrong') el.classList.add('text-rose-400');
+                else el.classList.add('text-slate-300');
+            });
+        }
+
+        function drawCharts() {
+            createPieChart('pie-a', currentNumA, currentDenA);
+            createBarChart('bar-a', currentNumA, currentDenA);
+            
+            createPieChart('pie-b', currentNumB, currentDenB);
+            createBarChart('bar-b', currentNumB, currentDenB);
+        }
+
+        function createPieChart(containerId, numerator, denominator) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 100 100");
+            svg.setAttribute("class", "w-full h-full transform -rotate-90 rounded-full bg-slate-100 border-2 border-slate-200 shadow-inner");
+            
+            // 塗る部分 (通分前後で面積が変わらないようにする)
+            if (numerator > 0) {
+                if (numerator === denominator) {
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", "50");
+                    circle.setAttribute("cy", "50");
+                    circle.setAttribute("r", "50");
+                    circle.setAttribute("class", "chart-target fill-current text-slate-400");
+                    svg.appendChild(circle);
+                } else {
+                    const percent = numerator / denominator;
+                    const angle = percent * 360;
+                    const x = 50 + 50 * Math.cos(angle * Math.PI / 180);
+                    const y = 50 + 50 * Math.sin(angle * Math.PI / 180);
+                    const largeArcFlag = angle > 180 ? 1 : 0;
+                    
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    // 0.01 などを引かないと、ブラウザの描画によっては境界線がチラつくため微調整
+                    path.setAttribute("d", `M 50 50 L 100 50 A 50 50 0 ${largeArcFlag} 1 ${x} ${y} Z`);
+                    path.setAttribute("class", "chart-target fill-current text-slate-400");
+                    svg.appendChild(path);
+                }
+            }
+            
+            // 分割線 (通分すると数が増える)
+            for (let i = 0; i < denominator; i++) {
+                const angle = (i / denominator) * 360;
+                const x = 50 + 50 * Math.cos(angle * Math.PI / 180);
+                const y = 50 + 50 * Math.sin(angle * Math.PI / 180);
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", "50");
+                line.setAttribute("y1", "50");
+                line.setAttribute("x2", x);
+                line.setAttribute("y2", y);
+                line.setAttribute("class", "stroke-slate-200");
+                line.setAttribute("stroke-width", "1.5");
+                svg.appendChild(line);
+            }
+            
+            container.appendChild(svg);
+        }
+
+        function createBarChart(containerId, numerator, denominator) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            const barWrap = document.createElement("div");
+            barWrap.className = "w-full h-6 sm:h-8 border-2 border-slate-200 flex rounded-md overflow-hidden bg-slate-100 shadow-inner";
+            
+            for (let i = 0; i < denominator; i++) {
+                const block = document.createElement("div");
+                const colorClass = i < numerator ? 'chart-target bg-current text-slate-400' : 'bg-transparent';
+                block.className = `flex-1 border-r border-slate-300 last:border-r-0 ${colorClass}`;
+                barWrap.appendChild(block);
+            }
+            
+            container.appendChild(barWrap);
+        }
+
+        function checkAnswer(answer) {
+            if (isAnimating) return;
+            
+            const valA = currentNumA / currentDenA;
+            const valB = currentNumB / currentDenB;
+            
+            let correct = '=';
+            // 浮動小数点の誤差を考慮
+            if (valA > valB + 0.0001) correct = '>';
+            if (valA < valB - 0.0001) correct = '<';
+
+            const answerBox = document.getElementById('answer-box');
+            const formula = document.getElementById('formula-container');
+            const chartTargets = document.querySelectorAll('.chart-target');
+            
+            isAnimating = true;
+            answerBox.textContent = answer;
+
+            if (answer === correct) {
+                // 正解
+                score++;
+                updateScore();
+
+                setFormulaColor('correct');
+                
+                answerBox.classList.remove('border-slate-200', 'text-slate-300');
+                answerBox.classList.add('border-emerald-500', 'text-emerald-500', 'bg-emerald-50');
+                
+                chartTargets.forEach(target => {
+                    target.classList.remove('text-slate-400', 'text-rose-400');
+                    target.classList.add('text-emerald-400');
+                });
+                
+                setTimeout(() => {
+                    generateQuestion();
+                }, 1200);
+
+            } else {
+                // 不正解
+                setFormulaColor('wrong');
+                
+                answerBox.classList.remove('border-slate-200', 'text-slate-300');
+                answerBox.classList.add('border-rose-400', 'text-rose-400', 'bg-rose-50');
+
+                formula.classList.add('animate-shake');
+
+                chartTargets.forEach(target => {
+                    target.classList.remove('text-slate-400');
+                    target.classList.add('text-rose-400');
+                });
+                
+                setTimeout(() => {
+                    formula.classList.remove('animate-shake');
+                    setFormulaColor(isTsuubunDone && currentLevel === 'level3' ? 'tsuubun' : 'normal');
+                    
+                    answerBox.classList.remove('border-rose-400', 'text-rose-400', 'bg-rose-50');
+                    answerBox.classList.add('border-slate-200', 'text-slate-300', 'bg-white');
+                    answerBox.textContent = '?';
+
+                    chartTargets.forEach(target => {
+                        target.classList.remove('text-rose-400');
+                        target.classList.add('text-slate-400');
+                    });
+                    
+                    isAnimating = false;
+                }, 800);
+            }
+        }
+
+        function updateScore() {
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.textContent = score;
+            
+            scoreDisplay.style.transform = 'scale(1.3)';
+            scoreDisplay.style.color = '#10b981';
+            
+            setTimeout(() => {
+                scoreDisplay.style.transform = 'scale(1)';
+                scoreDisplay.style.color = '#475569';
+            }, 300);
+        }
+
+        // リソースの読み込み遅延（window.onloadが発火しない等）を防ぐため、
+        // DOMツリー構築後に即座に初期化処理を実行する
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+        // 念のためのフォールバック
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

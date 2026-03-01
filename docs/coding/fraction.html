@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Google Gemini - Conversation Export</title>
+  <style>
+    :root{
+      color-scheme: light dark;
+      --bg:#0b0c10;
+      --card: rgba(255,255,255,0.06);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.65);
+      --border: rgba(255,255,255,0.12);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo", sans-serif;
+      --userAccent: rgba(96, 165, 250, 0.25);
+      --modelAccent: rgba(52, 211, 153, 0.22);
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f7fb;
+        --card: rgba(0,0,0,0.04);
+        --text: rgba(0,0,0,0.90);
+        --muted: rgba(0,0,0,0.60);
+        --border: rgba(0,0,0,0.12);
+        --userAccent: rgba(59, 130, 246, 0.18);
+        --modelAccent: rgba(16, 185, 129, 0.16);
+      }
+    }
+    body { margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); line-height:1.55; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+    .header { border:1px solid var(--border); background:var(--card); border-radius:14px; padding:16px 16px 12px; margin-bottom:16px; }
+    .title { font-size:18px; font-weight:800; margin:0 0 6px; }
+    .meta { font-size:12px; color:var(--muted); display:flex; flex-wrap:wrap; gap:10px; }
+    .meta a { color: inherit; text-decoration:none; border-bottom:1px dotted var(--border); }
+    .meta a:hover { border-bottom-style: solid; }
+
+    .note { border:1px solid var(--border); background:var(--card); border-radius:14px; padding:14px 16px; margin:12px 0 16px; }
+    .note-title { font-weight:700; margin-bottom:6px; font-size:13px; }
+    .note-body { white-space:pre-wrap; font-size:13px; }
+
+    .timeline { display:flex; flex-direction:column; gap: 12px; }
+
+    .turn {
+      border:1px solid var(--border);
+      background:var(--card);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .turn.user { box-shadow: inset 0 0 0 9999px var(--userAccent); }
+    .turn.model { box-shadow: inset 0 0 0 9999px var(--modelAccent); }
+
+    .turn-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      background: rgba(0,0,0,0.06);
+    }
+    @media (prefers-color-scheme: light){
+      .turn-head { background: rgba(0,0,0,0.02); }
+    }
+    .role {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .turn-body {
+      padding: 12px 12px 14px;
+      overflow-wrap:anywhere;
+      word-break: break-word;
+    }
+
+    /* 装飾は維持 */
+    pre, code { font-family: var(--mono); }
+    pre {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      overflow: auto;
+      white-space: pre;
+      margin: 12px 0;
+    }
+    @media (prefers-color-scheme: light) { pre { background: rgba(0,0,0,0.04); } }
+    code {
+      padding: 0.15em 0.35em;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.10);
+    }
+    h1,h2,h3 { margin: 16px 0 8px; }
+    p { margin: 8px 0; }
+    ul,ol { margin: 8px 0 8px 24px; }
+    blockquote {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-left: 4px solid var(--border);
+      background: rgba(0,0,0,0.10);
+      border-radius: 10px;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+    th, td { border: 1px solid var(--border); padding: 8px; vertical-align: top; }
+    img { max-width: 100%; height: auto; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">Google Gemini</h1>
+      <div class="meta">
+        <div>Exported: <span>2026-03-01T15:20:06.768Z</span></div>
+        <div>Source: <a href="https://gemini.google.com/u/1/app/1b9eccfa62cbdf61?utm_source=app_launcher&amp;utm_medium=owned&amp;utm_campaign=base_all" target="_blank" rel="noreferrer">https://gemini.google.com/u/1/app/1b9eccfa62cbdf61?utm_source=app_launcher&amp;utm_medium=owned&amp;utm_campaign=base_all</a></div>
+      </div>
+    </div>
+    
+    <div class="timeline">
+      
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-0" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> 以下の掛け算のアプリの、分数の大小比較バージョンを作成してください。同様のテイストでお願いします。分数の大小比較は、円の分割と線分の分割と、両方並べて表示しておくのが良いと思います。 <!----><!----></p><p class="query-text-line"> ---- <!----><!----></p><p class="query-text-line"> &lt;!DOCTYPE html&gt; <!----><!----></p><p class="query-text-line"> &lt;html lang="ja"&gt; <!----><!----></p><p class="query-text-line"> &lt;head&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;meta charset="UTF-8"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;!-- ズームとスケーリングを完全に禁止 --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;title&gt;かけざん&lt;/title&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;style&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; /* スクロールやバウンスを完全に無効化する強力なリセット */ <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; html, body { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; position: fixed; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; top: 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; left: 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; right: 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; bottom: 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; overflow: hidden; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; width: 100%; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; height: 100%; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; touch-action: none; /* スワイプなどを禁止 */ <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; body { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; font-family: 'Inter', sans-serif; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; background-color: #fafafa; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; /* Number input のスピンボタンを非表示にする */ <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; input[type="number"]::-webkit-inner-spin-button, <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; input[type="number"]::-webkit-outer-spin-button { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -webkit-appearance: none; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; margin: 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; input[type="number"] { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -moz-appearance: textfield; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; /* iOSでの自動ズームを防ぐため16px以上を強制 */ <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; font-size: 2rem !important;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; .dot { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; transition: background-color 0.4s ease, transform 0.4s ease; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; @keyframes shake { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 0%, 100% { transform: translateX(0); } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 20% { transform: translateX(-4px); } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 40% { transform: translateX(4px); } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 60% { transform: translateX(-4px); } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 80% { transform: translateX(4px); } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; .animate-shake { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; animation: shake 0.4s ease-in-out; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; .modal-bg { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; background-color: rgba(0, 0, 0, 0.4); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; backdrop-filter: blur(2px); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;/style&gt; <!----><!----></p><p class="query-text-line"> &lt;/head&gt; <!----><!----></p><p class="query-text-line"> &lt;body class="text-slate-800 select-none flex flex-col items-center justify-start w-full h-full"&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;!-- ヘッダー: 縦幅を最小限に抑える --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;header class="flex-none w-full max-w-2xl flex items-center justify-between px-3 py-2 text-slate-400 z-10"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;button id="settings-btn" class="p-2 -ml-2 hover:text-slate-600 transition-colors rounded-full active:bg-slate-100" aria-label="設定"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"&gt;&lt;/path&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;circle cx="12" cy="12" r="3"&gt;&lt;/circle&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/svg&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;/button&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class="flex items-center gap-2 font-medium tracking-wider"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span class="text-xs"&gt;SCORE&lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span id="score-display" class="text-lg text-slate-600 w-6 text-right transition-all duration-300"&gt;0&lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;/header&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;!-- メインコンテンツ: 余った高さをすべて使い、縦幅が足りない場合は縮小する --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;main class="flex-1 w-full max-w-2xl flex flex-col items-center justify-center min-h-0 px-2 pb-2"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;!-- 図形（アレイ図）エリア: 画面の高さに応じて縮小する --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class="relative flex-1 flex flex-col items-center justify-center min-h-[120px] max-h-[260px] w-full"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button id="rotate-btn" class="absolute right-2 top-0 sm:right-10 sm:top-2 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-100 transition-all active:scale-90 z-10 rounded-full" aria-label="回転"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"&gt;&lt;/path&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;polyline points="21 3 21 8 16 8"&gt;&lt;/polyline&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/svg&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/button&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;!-- グリッドコンテナ --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div id="grid-container" class="grid gap-1 transition-transform duration-700 ease-in-out"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;!-- JavaScriptでマス目が生成されます --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;!-- 数式と入力エリア: 高さを固定し、一番下に配置 --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;div id="formula-container" class="flex-none text-4xl sm:text-5xl font-light flex items-center justify-center gap-1 sm:gap-3 transition-colors duration-500 mt-2 mb-2"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span id="val-a" class="w-10 sm:w-12 text-right"&gt;?&lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span class="text-slate-300 font-normal scale-75"&gt;×&lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span id="val-b" class="w-10 sm:w-12 text-left"&gt;?&lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span class="text-slate-300 font-normal scale-75"&gt;=&lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class="relative flex items-center ml-1"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;input type="number" id="answer" inputmode="numeric" pattern="[0-9]*" <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; class="w-16 sm:w-20 bg-transparent text-center border-b-4 border-slate-200 focus:border-slate-500 outline-none transition-all duration-300 rounded-none placeholder:text-slate-200 px-0 pb-1 h-12"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button id="submit-btn" class="absolute -right-10 sm:-right-12 p-2 text-slate-300 hover:text-slate-600 transition-colors" aria-label="確定"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;polyline points="20 6 9 17 4 12"&gt;&lt;/polyline&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/svg&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/button&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;/main&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;!-- 設定モーダルダイアログ --&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;div id="settings-modal" class="fixed inset-0 modal-bg flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-50"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class="bg-white rounded-2xl p-5 w-11/12 max-w-xs shadow-2xl transform scale-95 transition-transform duration-300" id="modal-content"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;h2 class="text-base font-semibold mb-4 text-slate-800 text-center"&gt;出題モード&lt;/h2&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class="flex flex-col gap-2"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button onclick="setMode('random')" class="w-full py-2.5 px-4 rounded-xl border-2 border-slate-200 font-medium text-slate-600 hover:border-emerald-500 hover:text-emerald-600 transition-colors text-sm" id="btn-mode-random"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ランダム <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/button&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class="relative w-full group"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button onclick="startSequenceMode()" class="w-full py-2.5 px-4 rounded-xl border-2 border-slate-200 font-medium text-slate-600 group-hover:border-blue-500 group-hover:text-blue-600 transition-colors text-left flex justify-between items-center text-sm" id="btn-mode-sequence"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span&gt;順番に出題&lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;span class="text-slate-400 flex items-center gap-1"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;select id="dan-select" class="bg-transparent text-slate-700 font-bold outline-none cursor-pointer" onchange="startSequenceMode(event)"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="1"&gt;1&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="2" selected&gt;2&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="3"&gt;3&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="4"&gt;4&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="5"&gt;5&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="6"&gt;6&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="7"&gt;7&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="8"&gt;8&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;option value="9"&gt;9&lt;/option&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/select&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; の段 ▼ <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/span&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/button&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;div class="mt-6 flex justify-center"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;button onclick="closeSettings()" class="py-2 px-6 rounded-full bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-colors text-xs"&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 閉じる <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/button&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;/div&gt; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;script&gt; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let currentMode = 'random'; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let currentDan = 2; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let sequenceStep = 1; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let currentA = 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let currentB = 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let currentRotation = 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let score = 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; let isAnimating = false; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function init() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const input = document.getElementById('answer'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const submitBtn = document.getElementById('submit-btn'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const rotateBtn = document.getElementById('rotate-btn'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const settingsBtn = document.getElementById('settings-btn'); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.addEventListener('click', checkAnswer); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.addEventListener('keypress', (e) =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (e.key === 'Enter') checkAnswer(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; rotateBtn.addEventListener('click', rotateGrid); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; settingsBtn.addEventListener('click', openSettings); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // 画面タッチでフォーカスを戻す（ただしボタン等は除く） <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; document.body.addEventListener('touchstart', (e) =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const modal = document.getElementById('settings-modal'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const isModalOpen = modal.classList.contains('opacity-100'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if(!isAnimating &amp;&amp; !isModalOpen &amp;&amp; e.target.closest('button') === null &amp;&amp; e.target.id !== 'answer' &amp;&amp; e.target.tagName !== 'SELECT') { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // iOS Safariのスクロール挙動を防ぐためのハック <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; e.preventDefault(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.focus(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }, { passive: false }); // preventDefaultを許可 <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; updateModeUI(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; generateQuestion(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function openSettings() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const modal = document.getElementById('settings-modal'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const content = document.getElementById('modal-content'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; modal.classList.remove('opacity-0', 'pointer-events-none'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; modal.classList.add('opacity-100', 'pointer-events-auto'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; content.classList.remove('scale-95'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; content.classList.add('scale-100'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function closeSettings() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const modal = document.getElementById('settings-modal'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const content = document.getElementById('modal-content'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; modal.classList.remove('opacity-100', 'pointer-events-auto'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; modal.classList.add('opacity-0', 'pointer-events-none'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; content.classList.remove('scale-100'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; content.classList.add('scale-95'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; setTimeout(() =&gt; document.getElementById('answer').focus(), 300); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function setMode(mode) { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentMode = mode; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; updateModeUI(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; score = 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; document.getElementById('score-display').textContent = score; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; generateQuestion(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function startSequenceMode(e) { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (e) e.stopPropagation(); // ボタンクリックイベントの伝播を防ぐ <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentMode = 'sequence'; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentDan = parseInt(document.getElementById('dan-select').value, 10); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; sequenceStep = 1; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; updateModeUI(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; score = 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; document.getElementById('score-display').textContent = score; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; generateQuestion(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function updateModeUI() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const btnRandom = document.getElementById('btn-mode-random'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const btnSequence = document.getElementById('btn-mode-sequence'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (currentMode === 'random') { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnRandom.classList.add('border-emerald-500', 'text-emerald-600', 'bg-emerald-50'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnRandom.classList.remove('border-slate-200', 'text-slate-600'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnSequence.classList.remove('border-blue-500', 'text-blue-600', 'bg-blue-50'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnSequence.classList.add('border-slate-200', 'text-slate-600'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } else { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnRandom.classList.remove('border-emerald-500', 'text-emerald-600', 'bg-emerald-50'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnRandom.classList.add('border-slate-200', 'text-slate-600'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnSequence.classList.add('border-blue-500', 'text-blue-600', 'bg-blue-50'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; btnSequence.classList.remove('border-slate-200', 'text-slate-600'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function generateQuestion() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; isAnimating = false; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (currentMode === 'random') { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentA = Math.floor(Math.random() * 9) + 1; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentB = Math.floor(Math.random() * 9) + 1; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } else { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentA = currentDan; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentB = sequenceStep; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentRotation = 0; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; document.getElementById('val-a').textContent = currentA; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; document.getElementById('val-b').textContent = currentB; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const input = document.getElementById('answer'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.value = ''; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.disabled = false; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (!document.getElementById('settings-modal').classList.contains('opacity-100')) { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.focus(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const formula = document.getElementById('formula-container'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.remove('text-emerald-500', 'text-rose-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.add('text-slate-800'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.remove('text-emerald-500', 'text-rose-400', 'border-transparent', 'border-rose-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.add('border-slate-200'); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const submitBtn = document.getElementById('submit-btn'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.remove('text-emerald-400', 'text-rose-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.add('text-slate-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; drawGrid(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function drawGrid() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const container = document.getElementById('grid-container'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; container.innerHTML = ''; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; container.style.transform = `rotate(${currentRotation}deg)`; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; container.style.gridTemplateColumns = `repeat(${currentA}, minmax(0, 1fr))`; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const total = currentA * currentB; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // 画面高さが非常に狭い場合を考慮し、ドットサイズをさらに小さく <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; for(let i = 0; i &lt; total; i++) { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const dot = document.createElement('div'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dot.className = 'dot w-[14px] h-[14px] sm:w-[20px] sm:h-[20px] bg-slate-400 rounded-sm shadow-sm'; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; container.appendChild(dot); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function rotateGrid() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (isAnimating) return; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; currentRotation += 90; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; document.getElementById('grid-container').style.transform = `rotate(${currentRotation}deg)`; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function checkAnswer() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (isAnimating) return; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const input = document.getElementById('answer'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const val = parseInt(input.value, 10); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (isNaN(val)) { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.focus(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const correct = currentA * currentB; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const formula = document.getElementById('formula-container'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const submitBtn = document.getElementById('submit-btn'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const dots = document.querySelectorAll('.dot'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; isAnimating = true; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.disabled = true; <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (val === correct) { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // 正解 <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; score++; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; updateScore(); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.remove('text-slate-800', 'text-rose-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.add('text-emerald-500'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.remove('border-slate-200', 'border-rose-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.add('text-emerald-500', 'border-transparent'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.remove('text-slate-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.add('text-emerald-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dots.forEach((dot, index) =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; setTimeout(() =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dot.classList.remove('bg-slate-400', 'bg-rose-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dot.classList.add('bg-emerald-400', 'scale-110'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }, index * (200 / dots.length)); // エフェクトを少し高速化 <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; setTimeout(() =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (currentMode === 'sequence') { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; sequenceStep++; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (sequenceStep &gt; 9) { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; sequenceStep = 1; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; generateQuestion(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }, 1000); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } else { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; // 不正解 <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.remove('text-slate-800'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.add('text-rose-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.remove('border-slate-200'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.add('text-rose-400', 'border-rose-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.remove('text-slate-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.add('text-rose-400'); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.add('animate-shake'); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dots.forEach(dot =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dot.classList.remove('bg-slate-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dot.classList.add('bg-rose-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; setTimeout(() =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.remove('animate-shake', 'text-rose-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; formula.classList.add('text-slate-800'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.remove('text-rose-400', 'border-rose-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.classList.add('border-slate-200'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.value = ''; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.disabled = false; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.remove('text-rose-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; submitBtn.classList.add('text-slate-300'); <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dots.forEach(dot =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dot.classList.remove('bg-rose-300'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; dot.classList.add('bg-slate-400'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; input.focus(); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; isAnimating = false; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }, 800); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; function updateScore() { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; const scoreDisplay = document.getElementById('score-display'); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; scoreDisplay.textContent = score; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; scoreDisplay.style.transform = 'scale(1.3)'; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; scoreDisplay.style.color = '#10b981'; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; setTimeout(() =&gt; { <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; scoreDisplay.style.transform = 'scale(1)'; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; scoreDisplay.style.color = '#475569'; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; }, 300); <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; } <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> &nbsp; &nbsp; &nbsp; &nbsp; window.onload = init; <!----><!----></p><p class="query-text-line"> &nbsp; &nbsp; &lt;/script&gt; <!----><!----></p><p class="query-text-line"> &lt;/body&gt; <!----><!----></p><p class="query-text-line"> &lt;/html&gt; <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_ac41a86ca727ec1d"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_ac41a86ca727ec1d" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">ご提示いただいた掛け算アプリの洗練されたUIやアニメーションのテイストを引き継ぎ、「分数の大小比較」バージョンを作成しました。</p><p data-path-to-node="1">特徴として以下の要素を盛り込んでいます：</p><ul data-path-to-node="2"><li><p data-path-to-node="2,0,0"><b data-path-to-node="2,0,0" data-index-in-node="0">2つの視覚化</b>: 分数ごとに「円の分割（パイチャート）」と「線分の分割（バー）」を並べて表示し、直感的な理解を促します。</p></li><li><p data-path-to-node="2,1,0"><b data-path-to-node="2,1,0" data-index-in-node="0">直感的な入力</b>: キーボードではなく「＜」「＝」「＞」のボタンをタップして回答するスマホに適したUIにしました。</p></li><li><p data-path-to-node="2,2,0"><b data-path-to-node="2,2,0" data-index-in-node="0">出題モード</b>: 設定から「ランダム」「分母が同じ」「分子が同じ」の3つの出題パターンを切り替えられます。</p></li><li><p data-path-to-node="2,3,0"><b data-path-to-node="2,3,0" data-index-in-node="0">アニメーション</b>: 正解時は鮮やかな緑色に、不正解時は赤色に揺れるインタラクションを維持しています。</p></li></ul><p data-path-to-node="3">以下のコードをHTMLファイルとして保存し、ブラウザで開いてお試しください。</p><response-element class="" ng-version="0.0.0-PLACEHOLDER"><!----><!----><!----><!----><!----><!----><code-block style=""><!----><!----><div class="code-block" jslog="223238;track:impression,attention;BardVeMetadataKey:[[&quot;r_ac41a86ca727ec1d&quot;,&quot;c_1b9eccfa62cbdf61&quot;,null,&quot;rc_a36eff506f8bbfa8&quot;,null,null,&quot;ja&quot;,null,1,null,null,1,0]]" style="display: block;"><div class="code-block-decoration header-formatted gds-title-s" style=""><span>HTML</span><!----></div><!----><div class="formatted-code-block-internal-container"><div class="animated-opacity"><pre><code role="text" data-test-id="code-content" class="code-container formatted"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"ja"</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">"UTF-8"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>分数の大小比較<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"https://cdn.tailwindcss.com"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">link</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap"</span> <span class="hljs-attr">rel</span>=<span class="hljs-string">"stylesheet"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+        <span class="hljs-selector-tag">html</span>, <span class="hljs-selector-tag">body</span> {
+            <span class="hljs-attribute">position</span>: fixed;
+            <span class="hljs-attribute">top</span>: <span class="hljs-number">0</span>;
+            <span class="hljs-attribute">left</span>: <span class="hljs-number">0</span>;
+            <span class="hljs-attribute">right</span>: <span class="hljs-number">0</span>;
+            <span class="hljs-attribute">bottom</span>: <span class="hljs-number">0</span>;
+            <span class="hljs-attribute">overflow</span>: hidden;
+            <span class="hljs-attribute">width</span>: <span class="hljs-number">100%</span>;
+            <span class="hljs-attribute">height</span>: <span class="hljs-number">100%</span>;
+            touch-action: none;
+        }
+        
+        <span class="hljs-selector-tag">body</span> {
+            <span class="hljs-attribute">font-family</span>: <span class="hljs-string">'Inter'</span>, sans-serif;
+            <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#fafafa</span>;
+        }
+
+        <span class="hljs-keyword">@keyframes</span> shake {
+            <span class="hljs-number">0%</span>, <span class="hljs-number">100%</span> { <span class="hljs-attribute">transform</span>: <span class="hljs-built_in">translateX</span>(<span class="hljs-number">0</span>); }
+            <span class="hljs-number">20%</span> { <span class="hljs-attribute">transform</span>: <span class="hljs-built_in">translateX</span>(-<span class="hljs-number">4px</span>); }
+            <span class="hljs-number">40%</span> { <span class="hljs-attribute">transform</span>: <span class="hljs-built_in">translateX</span>(<span class="hljs-number">4px</span>); }
+            <span class="hljs-number">60%</span> { <span class="hljs-attribute">transform</span>: <span class="hljs-built_in">translateX</span>(-<span class="hljs-number">4px</span>); }
+            <span class="hljs-number">80%</span> { <span class="hljs-attribute">transform</span>: <span class="hljs-built_in">translateX</span>(<span class="hljs-number">4px</span>); }
+        }
+        <span class="hljs-selector-class">.animate-shake</span> {
+            <span class="hljs-attribute">animation</span>: shake <span class="hljs-number">0.4s</span> ease-in-out;
+        }
+
+        <span class="hljs-selector-class">.modal-bg</span> {
+            <span class="hljs-attribute">background-color</span>: <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0.4</span>);
+            backdrop-<span class="hljs-attribute">filter</span>: <span class="hljs-built_in">blur</span>(<span class="hljs-number">2px</span>);
+        }
+        
+        <span class="hljs-comment">/* グラフのアニメーション用 */</span>
+        <span class="hljs-selector-class">.chart-target</span> {
+            <span class="hljs-attribute">transition</span>: color <span class="hljs-number">0.4s</span> ease, background-color <span class="hljs-number">0.4s</span> ease, fill <span class="hljs-number">0.4s</span> ease;
+        }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"text-slate-800 select-none flex flex-col items-center justify-start w-full h-full"</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">header</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex-none w-full max-w-2xl flex items-center justify-between px-3 py-2 text-slate-400 z-10"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"settings-btn"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"p-2 -ml-2 hover:text-slate-600 transition-colors rounded-full active:bg-slate-100"</span> <span class="hljs-attr">aria-label</span>=<span class="hljs-string">"設定"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">svg</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">"http://www.w3.org/2000/svg"</span> <span class="hljs-attr">width</span>=<span class="hljs-string">"20"</span> <span class="hljs-attr">height</span>=<span class="hljs-string">"20"</span> <span class="hljs-attr">viewBox</span>=<span class="hljs-string">"0 0 24 24"</span> <span class="hljs-attr">fill</span>=<span class="hljs-string">"none"</span> <span class="hljs-attr">stroke</span>=<span class="hljs-string">"currentColor"</span> <span class="hljs-attr">stroke-width</span>=<span class="hljs-string">"2"</span> <span class="hljs-attr">stroke-linecap</span>=<span class="hljs-string">"round"</span> <span class="hljs-attr">stroke-linejoin</span>=<span class="hljs-string">"round"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">path</span> <span class="hljs-attr">d</span>=<span class="hljs-string">"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">path</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">circle</span> <span class="hljs-attr">cx</span>=<span class="hljs-string">"12"</span> <span class="hljs-attr">cy</span>=<span class="hljs-string">"12"</span> <span class="hljs-attr">r</span>=<span class="hljs-string">"3"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">circle</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">svg</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex items-center gap-2 font-medium tracking-wider"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"text-xs"</span>&gt;</span>SCORE<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"score-display"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"text-lg text-slate-600 w-6 text-right transition-all duration-300"</span>&gt;</span>0<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">header</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">main</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex-1 w-full max-w-2xl flex flex-col items-center justify-between min-h-0 px-2 pb-6"</span>&gt;</span>
+        
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex-1 w-full flex justify-center items-center gap-4 sm:gap-12 px-2 mt-2 max-h-[40vh]"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex flex-col items-center gap-4 w-5/12 max-w-[160px]"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"pie-a"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-20 h-20 sm:w-28 sm:h-28"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"bar-a"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-full"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"text-slate-300 font-light text-2xl flex-none"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex flex-col items-center gap-4 w-5/12 max-w-[160px]"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"pie-b"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-20 h-20 sm:w-28 sm:h-28"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"bar-b"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-full"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"formula-container"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex-none flex items-center justify-center gap-4 sm:gap-8 transition-colors duration-500 text-slate-800 my-4"</span>&gt;</span>
+            
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex flex-col items-center justify-center font-medium text-4xl sm:text-5xl w-14"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"num-a"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"border-b-[3px] border-current w-full text-center pb-1 mb-1 transition-colors duration-500"</span>&gt;</span>?<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"den-a"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-full text-center"</span>&gt;</span>?<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"answer-box"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-16 h-16 sm:w-20 sm:h-20 border-4 border-slate-200 rounded-xl flex items-center justify-center text-4xl sm:text-5xl text-slate-300 bg-white transition-all duration-300 font-medium shadow-sm"</span>&gt;</span>
+                ?
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex flex-col items-center justify-center font-medium text-4xl sm:text-5xl w-14"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"num-b"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"border-b-[3px] border-current w-full text-center pb-1 mb-1 transition-colors duration-500"</span>&gt;</span>?<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"den-b"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-full text-center"</span>&gt;</span>?<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex gap-3 sm:gap-5 z-10"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"checkAnswer('&lt;')"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-20 h-16 sm:w-24 sm:h-20 bg-white shadow-sm border-2 border-slate-200 rounded-2xl text-3xl font-bold text-slate-500 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all flex items-center justify-center"</span>&gt;</span>
+                <span class="hljs-symbol">&amp;lt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"checkAnswer('=')"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-20 h-16 sm:w-24 sm:h-20 bg-white shadow-sm border-2 border-slate-200 rounded-2xl text-3xl font-bold text-slate-500 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all flex items-center justify-center"</span>&gt;</span>
+                =
+            <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"checkAnswer('&gt;')"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"w-20 h-16 sm:w-24 sm:h-20 bg-white shadow-sm border-2 border-slate-200 rounded-2xl text-3xl font-bold text-slate-500 hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all flex items-center justify-center"</span>&gt;</span>
+                <span class="hljs-symbol">&amp;gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;/<span class="hljs-name">main</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"settings-modal"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"fixed inset-0 modal-bg flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 z-50"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-white rounded-2xl p-5 w-11/12 max-w-xs shadow-2xl transform scale-95 transition-transform duration-300"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"modal-content"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">h2</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"text-base font-semibold mb-4 text-slate-800 text-center"</span>&gt;</span>出題モード<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+            
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex flex-col gap-3"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"setMode('random')"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mode-btn w-full py-2.5 px-4 rounded-xl border-2 font-medium transition-colors text-sm"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btn-mode-random"</span>&gt;</span>
+                    ランダム（すべて）
+                <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"setMode('same-den')"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mode-btn w-full py-2.5 px-4 rounded-xl border-2 font-medium transition-colors text-sm"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btn-mode-same-den"</span>&gt;</span>
+                    分母がおなじ
+                <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"setMode('same-num')"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mode-btn w-full py-2.5 px-4 rounded-xl border-2 font-medium transition-colors text-sm"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btn-mode-same-num"</span>&gt;</span>
+                    分子がおなじ
+                <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mt-6 flex justify-center"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"closeSettings()"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"py-2 px-6 rounded-full bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-colors text-xs"</span>&gt;</span>
+                    閉じる
+                <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+        <span class="hljs-keyword">let</span> currentMode = <span class="hljs-string">'random'</span>;
+        <span class="hljs-keyword">let</span> currentNumA = <span class="hljs-number">1</span>, currentDenA = <span class="hljs-number">2</span>;
+        <span class="hljs-keyword">let</span> currentNumB = <span class="hljs-number">1</span>, currentDenB = <span class="hljs-number">3</span>;
+        <span class="hljs-keyword">let</span> score = <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">let</span> isAnimating = <span class="hljs-literal">false</span>;
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">init</span>() </span>{
+            <span class="hljs-keyword">const</span> settingsBtn = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'settings-btn'</span>);
+            settingsBtn.addEventListener(<span class="hljs-string">'click'</span>, openSettings);
+            
+            updateModeUI();
+            generateQuestion();
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">openSettings</span>() </span>{
+            <span class="hljs-keyword">const</span> modal = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'settings-modal'</span>);
+            <span class="hljs-keyword">const</span> content = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'modal-content'</span>);
+            modal.classList.remove(<span class="hljs-string">'opacity-0'</span>, <span class="hljs-string">'pointer-events-none'</span>);
+            modal.classList.add(<span class="hljs-string">'opacity-100'</span>, <span class="hljs-string">'pointer-events-auto'</span>);
+            content.classList.remove(<span class="hljs-string">'scale-95'</span>);
+            content.classList.add(<span class="hljs-string">'scale-100'</span>);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">closeSettings</span>() </span>{
+            <span class="hljs-keyword">const</span> modal = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'settings-modal'</span>);
+            <span class="hljs-keyword">const</span> content = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'modal-content'</span>);
+            modal.classList.remove(<span class="hljs-string">'opacity-100'</span>, <span class="hljs-string">'pointer-events-auto'</span>);
+            modal.classList.add(<span class="hljs-string">'opacity-0'</span>, <span class="hljs-string">'pointer-events-none'</span>);
+            content.classList.remove(<span class="hljs-string">'scale-100'</span>);
+            content.classList.add(<span class="hljs-string">'scale-95'</span>);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setMode</span>(<span class="hljs-params">mode</span>) </span>{
+            currentMode = mode;
+            updateModeUI();
+            score = <span class="hljs-number">0</span>;
+            <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'score-display'</span>).textContent = score;
+            generateQuestion();
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">updateModeUI</span>() </span>{
+            <span class="hljs-keyword">const</span> modes = [<span class="hljs-string">'random'</span>, <span class="hljs-string">'same-den'</span>, <span class="hljs-string">'same-num'</span>];
+            modes.forEach(<span class="hljs-function"><span class="hljs-params">mode</span> =&gt;</span> {
+                <span class="hljs-keyword">const</span> btn = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">`btn-mode-<span class="hljs-subst">${mode}</span>`</span>);
+                <span class="hljs-keyword">if</span> (mode === currentMode) {
+                    btn.className = <span class="hljs-string">`mode-btn w-full py-2.5 px-4 rounded-xl border-2 font-medium transition-colors text-sm border-emerald-500 text-emerald-600 bg-emerald-50`</span>;
+                } <span class="hljs-keyword">else</span> {
+                    btn.className = <span class="hljs-string">`mode-btn w-full py-2.5 px-4 rounded-xl border-2 font-medium transition-colors text-sm border-slate-200 text-slate-600 hover:border-emerald-300`</span>;
+                }
+            });
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generateQuestion</span>() </span>{
+            isAnimating = <span class="hljs-literal">false</span>;
+            
+            <span class="hljs-comment">// 問題の生成</span>
+            <span class="hljs-keyword">if</span> (currentMode === <span class="hljs-string">'random'</span>) {
+                currentDenA = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">8</span>) + <span class="hljs-number">2</span>; <span class="hljs-comment">// 2〜9</span>
+                currentNumA = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * currentDenA) + <span class="hljs-number">1</span>;
+                currentDenB = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">8</span>) + <span class="hljs-number">2</span>;
+                currentNumB = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * currentDenB) + <span class="hljs-number">1</span>;
+                
+                <span class="hljs-comment">// たまに意図的に等しい分数（通分関係）を生成する</span>
+                <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Math</span>.random() &lt; <span class="hljs-number">0.2</span>) {
+                    <span class="hljs-keyword">const</span> baseDen = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">3</span>) + <span class="hljs-number">2</span>; <span class="hljs-comment">// 2〜4</span>
+                    <span class="hljs-keyword">const</span> baseNum = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * baseDen) + <span class="hljs-number">1</span>;
+                    <span class="hljs-keyword">const</span> multA = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">2</span>) + <span class="hljs-number">1</span>;
+                    <span class="hljs-keyword">const</span> multB = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">2</span>) + <span class="hljs-number">1</span>;
+                    currentDenA = baseDen * multA; currentNumA = baseNum * multA;
+                    currentDenB = baseDen * multB; currentNumB = baseNum * multB;
+                }
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (currentMode === <span class="hljs-string">'same-den'</span>) {
+                currentDenA = currentDenB = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">8</span>) + <span class="hljs-number">2</span>;
+                currentNumA = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * currentDenA) + <span class="hljs-number">1</span>;
+                currentNumB = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * currentDenB) + <span class="hljs-number">1</span>;
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (currentMode === <span class="hljs-string">'same-num'</span>) {
+                currentNumA = currentNumB = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">5</span>) + <span class="hljs-number">1</span>; <span class="hljs-comment">// 1〜5</span>
+                currentDenA = currentNumA + <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">4</span>); <span class="hljs-comment">// 真分数になるよう調整</span>
+                currentDenB = currentNumB + <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">4</span>);
+            }
+            
+            <span class="hljs-comment">// 数式の更新</span>
+            <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'num-a'</span>).textContent = currentNumA;
+            <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'den-a'</span>).textContent = currentDenA;
+            <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'num-b'</span>).textContent = currentNumB;
+            <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'den-b'</span>).textContent = currentDenB;
+            
+            <span class="hljs-comment">// 解答ボックスとUIのリセット</span>
+            <span class="hljs-keyword">const</span> answerBox = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'answer-box'</span>);
+            answerBox.textContent = <span class="hljs-string">'?'</span>;
+            
+            <span class="hljs-keyword">const</span> formula = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'formula-container'</span>);
+            formula.classList.remove(<span class="hljs-string">'text-emerald-500'</span>, <span class="hljs-string">'text-rose-400'</span>);
+            formula.classList.add(<span class="hljs-string">'text-slate-800'</span>);
+            
+            answerBox.classList.remove(<span class="hljs-string">'border-emerald-500'</span>, <span class="hljs-string">'text-emerald-500'</span>, <span class="hljs-string">'bg-emerald-50'</span>, <span class="hljs-string">'border-rose-400'</span>, <span class="hljs-string">'text-rose-400'</span>, <span class="hljs-string">'bg-rose-50'</span>);
+            answerBox.classList.add(<span class="hljs-string">'border-slate-200'</span>, <span class="hljs-string">'text-slate-300'</span>, <span class="hljs-string">'bg-white'</span>);
+
+            <span class="hljs-comment">// 図解の描画</span>
+            drawCharts();
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">drawCharts</span>() </span>{
+            createPieChart(<span class="hljs-string">'pie-a'</span>, currentNumA, currentDenA);
+            createBarChart(<span class="hljs-string">'bar-a'</span>, currentNumA, currentDenA);
+            
+            createPieChart(<span class="hljs-string">'pie-b'</span>, currentNumB, currentDenB);
+            createBarChart(<span class="hljs-string">'bar-b'</span>, currentNumB, currentDenB);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createPieChart</span>(<span class="hljs-params">containerId, numerator, denominator</span>) </span>{
+            <span class="hljs-keyword">const</span> container = <span class="hljs-built_in">document</span>.getElementById(containerId);
+            container.innerHTML = <span class="hljs-string">''</span>;
+            
+            <span class="hljs-keyword">const</span> svg = <span class="hljs-built_in">document</span>.createElementNS(<span class="hljs-string">"http://www.w3.org/2000/svg"</span>, <span class="hljs-string">"svg"</span>);
+            svg.setAttribute(<span class="hljs-string">"viewBox"</span>, <span class="hljs-string">"0 0 100 100"</span>);
+            svg.setAttribute(<span class="hljs-string">"class"</span>, <span class="hljs-string">"w-full h-full transform -rotate-90 rounded-full bg-slate-100 border-2 border-slate-200 shadow-inner"</span>);
+            
+            <span class="hljs-comment">// 色塗り部分 (扇形描画)</span>
+            <span class="hljs-keyword">if</span> (numerator &gt; <span class="hljs-number">0</span>) {
+                <span class="hljs-keyword">if</span> (numerator === denominator) {
+                    <span class="hljs-keyword">const</span> circle = <span class="hljs-built_in">document</span>.createElementNS(<span class="hljs-string">"http://www.w3.org/2000/svg"</span>, <span class="hljs-string">"circle"</span>);
+                    circle.setAttribute(<span class="hljs-string">"cx"</span>, <span class="hljs-string">"50"</span>);
+                    circle.setAttribute(<span class="hljs-string">"cy"</span>, <span class="hljs-string">"50"</span>);
+                    circle.setAttribute(<span class="hljs-string">"r"</span>, <span class="hljs-string">"50"</span>);
+                    circle.setAttribute(<span class="hljs-string">"class"</span>, <span class="hljs-string">"chart-target fill-current text-slate-400"</span>);
+                    svg.appendChild(circle);
+                } <span class="hljs-keyword">else</span> {
+                    <span class="hljs-keyword">const</span> percent = numerator / denominator;
+                    <span class="hljs-keyword">const</span> angle = percent * <span class="hljs-number">360</span>;
+                    <span class="hljs-keyword">const</span> x = <span class="hljs-number">50</span> + <span class="hljs-number">50</span> * <span class="hljs-built_in">Math</span>.cos(angle * <span class="hljs-built_in">Math</span>.PI / <span class="hljs-number">180</span>);
+                    <span class="hljs-keyword">const</span> y = <span class="hljs-number">50</span> + <span class="hljs-number">50</span> * <span class="hljs-built_in">Math</span>.sin(angle * <span class="hljs-built_in">Math</span>.PI / <span class="hljs-number">180</span>);
+                    <span class="hljs-keyword">const</span> largeArcFlag = angle &gt; <span class="hljs-number">180</span> ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>;
+                    
+                    <span class="hljs-keyword">const</span> path = <span class="hljs-built_in">document</span>.createElementNS(<span class="hljs-string">"http://www.w3.org/2000/svg"</span>, <span class="hljs-string">"path"</span>);
+                    path.setAttribute(<span class="hljs-string">"d"</span>, <span class="hljs-string">`M 50 50 L 100 50 A 50 50 0 <span class="hljs-subst">${largeArcFlag}</span> 1 <span class="hljs-subst">${x}</span> <span class="hljs-subst">${y}</span> Z`</span>);
+                    path.setAttribute(<span class="hljs-string">"class"</span>, <span class="hljs-string">"chart-target fill-current text-slate-400"</span>);
+                    svg.appendChild(path);
+                }
+            }
+            
+            <span class="hljs-comment">// 分割線</span>
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; denominator; i++) {
+                <span class="hljs-keyword">const</span> angle = (i / denominator) * <span class="hljs-number">360</span>;
+                <span class="hljs-keyword">const</span> x = <span class="hljs-number">50</span> + <span class="hljs-number">50</span> * <span class="hljs-built_in">Math</span>.cos(angle * <span class="hljs-built_in">Math</span>.PI / <span class="hljs-number">180</span>);
+                <span class="hljs-keyword">const</span> y = <span class="hljs-number">50</span> + <span class="hljs-number">50</span> * <span class="hljs-built_in">Math</span>.sin(angle * <span class="hljs-built_in">Math</span>.PI / <span class="hljs-number">180</span>);
+                <span class="hljs-keyword">const</span> line = <span class="hljs-built_in">document</span>.createElementNS(<span class="hljs-string">"http://www.w3.org/2000/svg"</span>, <span class="hljs-string">"line"</span>);
+                line.setAttribute(<span class="hljs-string">"x1"</span>, <span class="hljs-string">"50"</span>);
+                line.setAttribute(<span class="hljs-string">"y1"</span>, <span class="hljs-string">"50"</span>);
+                line.setAttribute(<span class="hljs-string">"x2"</span>, x);
+                line.setAttribute(<span class="hljs-string">"y2"</span>, y);
+                line.setAttribute(<span class="hljs-string">"class"</span>, <span class="hljs-string">"stroke-slate-200"</span>);
+                line.setAttribute(<span class="hljs-string">"stroke-width"</span>, <span class="hljs-string">"1.5"</span>);
+                svg.appendChild(line);
+            }
+            
+            container.appendChild(svg);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createBarChart</span>(<span class="hljs-params">containerId, numerator, denominator</span>) </span>{
+            <span class="hljs-keyword">const</span> container = <span class="hljs-built_in">document</span>.getElementById(containerId);
+            container.innerHTML = <span class="hljs-string">''</span>;
+            
+            <span class="hljs-keyword">const</span> barWrap = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">"div"</span>);
+            barWrap.className = <span class="hljs-string">"w-full h-6 sm:h-8 border-2 border-slate-200 flex rounded-md overflow-hidden bg-slate-100 shadow-inner"</span>;
+            
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; denominator; i++) {
+                <span class="hljs-keyword">const</span> block = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">"div"</span>);
+                <span class="hljs-keyword">const</span> colorClass = i &lt; numerator ? <span class="hljs-string">'chart-target bg-current text-slate-400'</span> : <span class="hljs-string">'bg-transparent'</span>;
+                block.className = <span class="hljs-string">`flex-1 border-r border-slate-200 last:border-r-0 <span class="hljs-subst">${colorClass}</span>`</span>;
+                barWrap.appendChild(block);
+            }
+            
+            container.appendChild(barWrap);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkAnswer</span>(<span class="hljs-params">answer</span>) </span>{
+            <span class="hljs-keyword">if</span> (isAnimating) <span class="hljs-keyword">return</span>;
+            
+            <span class="hljs-keyword">const</span> valA = currentNumA / currentDenA;
+            <span class="hljs-keyword">const</span> valB = currentNumB / currentDenB;
+            
+            <span class="hljs-keyword">let</span> correct = <span class="hljs-string">'='</span>;
+            <span class="hljs-keyword">if</span> (valA &gt; valB) correct = <span class="hljs-string">'&gt;'</span>;
+            <span class="hljs-keyword">if</span> (valA &lt; valB) correct = <span class="hljs-string">'&lt;'</span>;
+
+            <span class="hljs-keyword">const</span> answerBox = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'answer-box'</span>);
+            <span class="hljs-keyword">const</span> formula = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'formula-container'</span>);
+            <span class="hljs-keyword">const</span> chartTargets = <span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">'.chart-target'</span>);
+            
+            isAnimating = <span class="hljs-literal">true</span>;
+            answerBox.textContent = answer;
+
+            <span class="hljs-keyword">if</span> (answer === correct) {
+                <span class="hljs-comment">// 正解</span>
+                score++;
+                updateScore();
+
+                formula.classList.remove(<span class="hljs-string">'text-slate-800'</span>, <span class="hljs-string">'text-rose-400'</span>);
+                formula.classList.add(<span class="hljs-string">'text-emerald-500'</span>);
+                
+                answerBox.classList.remove(<span class="hljs-string">'border-slate-200'</span>, <span class="hljs-string">'text-slate-300'</span>);
+                answerBox.classList.add(<span class="hljs-string">'border-emerald-500'</span>, <span class="hljs-string">'text-emerald-500'</span>, <span class="hljs-string">'bg-emerald-50'</span>);
+                
+                chartTargets.forEach(<span class="hljs-function"><span class="hljs-params">target</span> =&gt;</span> {
+                    target.classList.remove(<span class="hljs-string">'text-slate-400'</span>, <span class="hljs-string">'text-rose-400'</span>);
+                    target.classList.add(<span class="hljs-string">'text-emerald-400'</span>);
+                });
+                
+                <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> {
+                    generateQuestion();
+                }, <span class="hljs-number">1000</span>);
+
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-comment">// 不正解</span>
+                formula.classList.remove(<span class="hljs-string">'text-slate-800'</span>);
+                formula.classList.add(<span class="hljs-string">'text-rose-400'</span>);
+                
+                answerBox.classList.remove(<span class="hljs-string">'border-slate-200'</span>, <span class="hljs-string">'text-slate-300'</span>);
+                answerBox.classList.add(<span class="hljs-string">'border-rose-400'</span>, <span class="hljs-string">'text-rose-400'</span>, <span class="hljs-string">'bg-rose-50'</span>);
+
+                formula.classList.add(<span class="hljs-string">'animate-shake'</span>);
+
+                chartTargets.forEach(<span class="hljs-function"><span class="hljs-params">target</span> =&gt;</span> {
+                    target.classList.remove(<span class="hljs-string">'text-slate-400'</span>);
+                    target.classList.add(<span class="hljs-string">'text-rose-400'</span>);
+                });
+                
+                <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> {
+                    formula.classList.remove(<span class="hljs-string">'animate-shake'</span>, <span class="hljs-string">'text-rose-400'</span>);
+                    formula.classList.add(<span class="hljs-string">'text-slate-800'</span>);
+                    
+                    answerBox.classList.remove(<span class="hljs-string">'border-rose-400'</span>, <span class="hljs-string">'text-rose-400'</span>, <span class="hljs-string">'bg-rose-50'</span>);
+                    answerBox.classList.add(<span class="hljs-string">'border-slate-200'</span>, <span class="hljs-string">'text-slate-300'</span>, <span class="hljs-string">'bg-white'</span>);
+                    answerBox.textContent = <span class="hljs-string">'?'</span>;
+
+                    chartTargets.forEach(<span class="hljs-function"><span class="hljs-params">target</span> =&gt;</span> {
+                        target.classList.remove(<span class="hljs-string">'text-rose-400'</span>);
+                        target.classList.add(<span class="hljs-string">'text-slate-400'</span>);
+                    });
+                    
+                    isAnimating = <span class="hljs-literal">false</span>;
+                }, <span class="hljs-number">800</span>);
+            }
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">updateScore</span>() </span>{
+            <span class="hljs-keyword">const</span> scoreDisplay = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'score-display'</span>);
+            scoreDisplay.textContent = score;
+            
+            scoreDisplay.style.transform = <span class="hljs-string">'scale(1.3)'</span>;
+            scoreDisplay.style.color = <span class="hljs-string">'#10b981'</span>;
+            
+            <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> {
+                scoreDisplay.style.transform = <span class="hljs-string">'scale(1)'</span>;
+                scoreDisplay.style.color = <span class="hljs-string">'#475569'</span>;
+            }, <span class="hljs-number">300</span>);
+        }
+
+        <span class="hljs-built_in">window</span>.onload = init;
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre><!----></div></div></div><!----><!----></code-block><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----></response-element><p data-path-to-node="5">他にも機能の追加や配色の微調整など、ご要望があればお気軽にお知らせください。</p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-1" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> すみません、もうちょっとちゃんとした設計が必要でした。 <!----><!----></p><p class="query-text-line"> まず、1/nの大小比較については、今の形式でよいと思います。ただ、一般にはすぐにa/bとc/dの比較はできないので、通分をするのでした。今のモードは1/nに限定してレベル1の1/の比較としておいて、レベル2として分数が同じもの、レベル3として通分が必要なものを入れましょう。 <!----><!----></p><p class="query-text-line"> レベル3については、現在と同じものを表示してもよいのですが、答を入力させる前に通分させるボタンを押して、それを押すと同じ値の分数で通分させて、分子の比較ができるようにする、というのが良いと思います。通分したら、画像についても通分した状態にするのがよいと思います（大きさは当然変更しない） <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_8d1d3b36d51fb500"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_8d1d3b36d51fb500" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">指定していただいた設計方針、非常に理にかなっていますね。分数の大小比較において「なぜ通分が必要か」「通分すると図形はどう変化するか（大きさは変わらず、分割が細かくなる）」を体験できる、素晴らしい教育ステップだと思います。</p><p data-path-to-node="1">ご要望に合わせて、以下の3つのレベルに再設計し、レベル3には「通分する」アクションを組み込みました。</p><ol start="1" data-path-to-node="2"><li><p data-path-to-node="2,0,0"><b data-path-to-node="2,0,0" data-index-in-node="0">レベル1</b>: <code data-path-to-node="2,0,0" data-index-in-node="6">1/n</code> の比較（分子が1で固定）</p></li><li><p data-path-to-node="2,1,0"><b data-path-to-node="2,1,0" data-index-in-node="0">レベル2</b>: 分母が同じものの比較</p></li><li><p data-path-to-node="2,2,0"><b data-path-to-node="2,2,0" data-index-in-node="0">レベル3</b>: 通分が必要な比較（「通分する」ボタンで分割と数式が変化してから解答）</p></li></ol><p data-path-to-node="3">以下のコードをお試しください。</p><div class="attachment-container unknown"><response-element class="" ng-version="0.0.0-PLACEHOLDER"><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><immersive-entry-chip><!----><div data-test-id="container" class="container is-open clickable" jslog="275420;track:impression,attention;BardVeMetadataKey:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[&quot;e6fa609c3fa255c0&quot;],null,null,null,null,null,null,null,null,null,null,null,[2]]"><!----><div data-test-id="default-entry-chip-content" class="default-entry-chip-content"><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><div class="text"><!----><div data-test-id="artifact-text" class="gds-title-m">分数の大小比較</div><span data-test-id="creation-timestamp" class="creation-timestamp gds-body-m">3月2日 0:15</span><!----><!----></div><!----><!----><!----></div><!----><!----><!----></div><!----><!----><!----><!----><!----></immersive-entry-chip><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----></response-element></div><p></p><h3 data-path-to-node="5">主なアップデート内容</h3><ol start="1" data-path-to-node="6"><li><p data-path-to-node="6,0,0"><b data-path-to-node="6,0,0" data-index-in-node="0">レベル制の導入（設定メニューを刷新）</b></p><ul data-path-to-node="6,0,1"><li><p data-path-to-node="6,0,1,0,0"><b data-path-to-node="6,0,1,0,0" data-index-in-node="0">レベル1</b>: <code data-path-to-node="6,0,1,0,0" data-index-in-node="6">1/n</code>の比較。基本的な分母と大きさの関係を学びます。</p></li><li><p data-path-to-node="6,0,1,1,0"><b data-path-to-node="6,0,1,1,0" data-index-in-node="0">レベル2</b>: 分母が同じものの比較。分子の大きさを比較するステップです。</p></li><li><p data-path-to-node="6,0,1,2,0"><b data-path-to-node="6,0,1,2,0" data-index-in-node="0">レベル3</b>: 通分が必要な比較。異なる分母の分数を比較する実践的なステップです。</p></li></ul></li><li><p data-path-to-node="6,1,0"><b data-path-to-node="6,1,0" data-index-in-node="0">「通分する」体験（レベル3）</b></p><ul data-path-to-node="6,1,1"><li><p data-path-to-node="6,1,1,0,0">レベル3では、問題が出題された直後は <code data-path-to-node="6,1,1,0,0" data-index-in-node="19">&lt;, =, &gt;</code> ボタンが隠れ、大きく目立つ「通分する」ボタンが表示されます。</p></li><li><p data-path-to-node="6,1,1,1,0">このボタンをタップすると、アニメーションとともに以下の変化が起きます。</p><ul data-path-to-node="6,1,1,1,1"><li><p data-path-to-node="6,1,1,1,1,0,0">数式が最小公倍数を使った分母に変わり、分子もそれに応じて変化します。</p></li><li><p data-path-to-node="6,1,1,1,1,1,0">円グラフとバーグラフの「色付きの面積・長さ」はそのままに、<b data-path-to-node="6,1,1,1,1,1,0" data-index-in-node="29">分割線だけが細かく増えます</b>（通分の本質である「大きさは変えずに細かく切り直す」ことを視覚的に表現しています）。</p></li><li><p data-path-to-node="6,1,1,1,1,2,0">通分完了後、比較用の解答ボタンが現れ、解答できるようになります。</p></li></ul></li></ul></li><li><p data-path-to-node="6,2,0"><b data-path-to-node="6,2,0" data-index-in-node="0">視覚表現の調整</b></p><ul data-path-to-node="6,2,1"><li><p data-path-to-node="6,2,1,0,0">通分した瞬間に数式が青くハイライトされ、少し弾むようなアニメーションを加えて「変化したこと」を直感的に伝えます。</p></li><li><p data-path-to-node="6,2,1,1,0">通分後の図形の分割線が細かくなりすぎないよう、計算上の最大公倍数（LCM）が24以下になるような組み合わせを自動で選出するロジックを組んでいます。</p></li></ul></li></ol></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-2" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> ありがとうございます。レベル1と2はそれでOKです。通分ですが、通分した結果は、通分前を残して表示するようにしましょう。左右の領域を使う、でよいと思います。画像については変更は不要と思います。 <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_93c9135bdd9ac965"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_93c9135bdd9ac965" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">「通分前を残して表示する」という方針、とても分かりやすくて良いですね！通分によって「数値の見た目は変わるけれど、大きさ（画像の色付き部分の面積）は同じ」ということが、数式の変化と図形の分割変化を通してより直感的に理解できるようになります。</p><p data-path-to-node="1">「画像については変更は不要」とのことでしたので、前回実装した「通分すると分割線が細かくなる」というアニメーションはそのまま活かしています。</p><p data-path-to-node="2">以下に差分（Diff）を出力しますので、お手元のファイルに適用してください。</p><p></p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-3" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> レベル3はOKですが、レベル1の1/2と1/3の比較などの表示がおかしくなりました。たぶんバグっています。正しい内容になるように修正してください。 <!----><!----></p><p class="query-text-line"> また、レベル3で表示する位置は下で構わないですが、下に表示すると&lt;=&gt;と被る場合があります。画面が小さい場合にはスクロール可能にしてください。キーボード入力はないので、問題ないと思います。 <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_35b345b9a6740d93"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_35b345b9a6740d93" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">レベル1などの表示がおかしくなっていたのは、内部で保持している「通分前の値（originalNumAなど）」の変数がレベル1と2の時に更新されていなかったためです。こちらを修正しました。</p><p data-path-to-node="1">また、画面が小さい端末への対応として、以下のレイアウト改修を行いました。</p><ol start="1" data-path-to-node="2"><li><p data-path-to-node="2,0,0"><b data-path-to-node="2,0,0" data-index-in-node="0">スクロールの許可</b>: コンテンツ領域をスクロール可能（<code data-path-to-node="2,0,0" data-index-in-node="26">overflow-y-auto</code>）に変更しました。</p></li><li><p data-path-to-node="2,1,0"><b data-path-to-node="2,1,0" data-index-in-node="0">レイアウトの調整</b>: 要素の配置を上詰めにし、必要に応じて下にスクロールできるようにしました。</p></li><li><p data-path-to-node="2,2,0"><b data-path-to-node="2,2,0" data-index-in-node="0">自動スクロールの追加</b>: 「通分する」ボタンを押して数式が縦に伸びた際、隠れてしまった解答ボタンが自動的にスクロールして表示されるようにしました。</p></li></ol><p data-path-to-node="3">以下のコードで修正内容を反映しています。</p><p></p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-4" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> ありがとうございます。 <!----><!----></p><p class="query-text-line"> ・スマホで開いたときに、一度?/? ? ?/?の状態になりました。 <!----><!----></p><p class="query-text-line"> ・レベル4として、画像が出ず通分をすることもない、単純に&lt;=&gt;を選ばせるモードを実装してください。設問の内容はレベル3と同じでOKです。 <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_af0db34c022b4e54"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_af0db34c022b4e54" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">読み込み時に一瞬「?」が表示されてしまう現象については、初期化が完了するまでメインコンテンツを透明にしておく（フェードインさせる）ことで解決できます。</p><p data-path-to-node="1">また、ご要望の「レベル4（図形なし・通分アクションなし）」を追加しました。問題生成のロジックはレベル3と共有しつつ、UIの表示（図解エリアと通分ボタン）をスキップするよう制御しています。</p><p data-path-to-node="2">以下の差分（Diff）をお手元のファイルに適用してください。</p><p></p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-5" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> ？の表示は一瞬ではなく、ずっとそうでした。この問題が頻発しないか、例えばリソース読み込み順の影響を受けないかなどを検証して、必要であれば修正してください。 <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_329db81449de61a0"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_329db81449de61a0" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">「ずっと『?/?』のままだった」という現象について、ご不便をおかけして申し訳ありません。</p><p data-path-to-node="1">おそらく、**「画像や外部フォント、Tailwind CSSなどの外部リソースの読み込みが遅延し、JavaScriptの初期化処理（<code data-path-to-node="1" data-index-in-node="66">window.onload</code>）がいつまでも実行されなかった」**ことが原因だと考えられます。</p><p data-path-to-node="2">この問題を根本的に解消するため、以下の3点の対策を施しました。</p><ol start="1" data-path-to-node="3"><li><p data-path-to-node="3,0,0"><b data-path-to-node="3,0,0" data-index-in-node="0">初期化のタイミングを前倒し</b>: <code data-path-to-node="3,0,0" data-index-in-node="15">window.onload</code>（すべてのリソース読み込み待ち）ではなく、<code data-path-to-node="3,0,0" data-index-in-node="49">DOMContentLoaded</code>（HTML要素が読み込まれた直後）に処理を開始するように変更しました。</p></li><li><p data-path-to-node="3,1,0"><b data-path-to-node="3,1,0" data-index-in-node="0">初期状態を確実に隠す</b>: Tailwind CSSのクラス適用前にHTMLが表示されてしまう現象（FOUC）を防ぐため、インラインスタイルで <code data-path-to-node="3,1,0" data-index-in-node="70">style="opacity: 0;"</code> を設定して確実に非表示からスタートするようにしました。</p></li><li><p data-path-to-node="3,2,0"><b data-path-to-node="3,2,0" data-index-in-node="0">HTMLから「?」を削除</b>: 初期状態で「?」の文字がチラ見えしないよう、HTML上は空にしておき、JavaScriptが起動して初めて文字がセットされる作りに変更しました。</p></li></ol><p data-path-to-node="4">以下の差分（Diff）をお手元のファイルに適用して、動作をご確認ください。</p><p></p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-6" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> ありがとうございます。ほぼ問題ありません。&lt;と&gt;が定着していない可能性があるので、ボタンの下に小さく薄い色で <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> 小なり <!----><!----></p><p class="query-text-line"> 左が小さい <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> 大なり <!----><!----></p><p class="query-text-line"> 左が大きい <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> と書いておきましょう。ほかはOKです。 <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_77349f6e4fc8932d"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_77349f6e4fc8932d" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">記号の意味がしっかり定着するように、各ボタンの下に補助テキストを追加しました。</p><p data-path-to-node="1">レイアウト崩れを防ぐため、ボタンの親要素の高さ（<code data-path-to-node="1" data-index-in-node="24">h-28</code>）と配置（<code data-path-to-node="1" data-index-in-node="33">items-start</code>）も少し調整しています。
+以下の差分（Diff）をお手元のファイルに適用してください。</p><p></p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-7" jslog="275422;track:impression,attention"><!----><!----><!----><span class="user-query-bubble-with-background"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><span class="cdk-visually-hidden">あなたのプロンプト</span><p class="query-text-line"> ありがとうございます。UIは完全に問題ないのですが、出題が&lt;や&gt;のバランスに対して偏りを感じます。しばらく続けて出る事が多いです。大小はランダムになるようにしてください。問題生成は今のやりかたで、最後に左右を1/2の確率で入れ替える、でも構わないです。 <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----></div><!----><!----><!----></div><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            <div class="container"><message-content id="message-content-id-r_40ad0c57cd871431"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color preserve-whitespaces-in-response" id="model-response-message-contentr_40ad0c57cd871431" aria-live="polite" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">ご指摘ありがとうございます。
+問題がランダムに生成される際、分母の選び方や互いに素な分子の候補数の違いなどにより、結果として左辺と右辺の大小関係に偏りが出てしまうケースがありました。</p><p data-path-to-node="1">ご提案いただいた通り、<b data-path-to-node="1" data-index-in-node="11">問題を生成した直後に50%の確率で左辺(A)と右辺(B)をごっそり入れ替える</b>処理を追加することで、「<code data-path-to-node="1" data-index-in-node="61">&lt;</code>」と「<code data-path-to-node="1" data-index-in-node="65">&gt;</code>」が完全に均等な確率で出現するように修正しました。</p><p data-path-to-node="2">以下の差分（Diff）をお手元のファイルに適用してください。</p><p></p><p data-path-to-node="4">この1つのブロックを追加するだけで、すべてのレベルにおいて左右のバランスが均等になります。ぜひお試しください！</p></div></message-content></div>
+          </div>
+        </section>
+      
+    </div>
+  </div>
+</body>
+</html>
