@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimum Height Trees - Algorithm Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* カスタムスクロールバー */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans h-screen flex flex-col overflow-hidden">
+
+    <!-- ヘッダー -->
+    <header class="p-4 bg-gray-800 shadow-md flex justify-between items-center z-10 border-b border-gray-700">
+        <div>
+            <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                Minimum Height Trees
+            </h1>
+            <p class="text-xs text-gray-400">アルゴリズム可視化ツール</p>
+        </div>
+        <button id="btn-regen" class="bg-gray-700 hover:bg-gray-600 text-sm py-2 px-4 rounded border border-gray-600 transition-colors">
+            🌲 木を再生成
+        </button>
+    </header>
+    
+    <!-- メインコンテンツ -->
+    <main class="flex flex-1 overflow-hidden">
+        
+        <!-- 左側コントロールパネル -->
+        <aside class="w-80 bg-gray-800 border-r border-gray-700 flex flex-col z-10">
+            <div class="p-4 border-b border-gray-700">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">アルゴリズムの選択</h2>
+                <div class="flex flex-col gap-2 text-sm" id="algo-selectors">
+                    
+                    <label class="flex items-start gap-3 p-3 bg-gray-700 rounded cursor-pointer border-2 border-transparent hover:border-gray-500 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-900/30">
+                        <input type="radio" name="algo" value="trim" class="mt-1" checked>
+                        <div>
+                            <span class="block font-bold text-blue-300">方針2: Leaves Trimming</span>
+                            <span class="block text-xs text-gray-400 mt-1">葉ノードを外側から少しずつ削っていき、最後に残ったものが中心。</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-3 p-3 bg-gray-700 rounded cursor-pointer border-2 border-transparent hover:border-gray-500 transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-900/30">
+                        <input type="radio" name="algo" value="doubledfs" class="mt-1">
+                        <div>
+                            <span class="block font-bold text-purple-300">方針3: 直径の中間点 (Double BFS)</span>
+                            <span class="block text-xs text-gray-400 mt-1">2回の探索で木の最長経路(直径)を見つけ、その中央を中心とする。</span>
+                        </div>
+                    </label>
+
+                    <label class="flex items-start gap-3 p-3 bg-gray-700 rounded cursor-pointer border-2 border-transparent hover:border-gray-500 transition-colors has-[:checked]:border-green-500 has-[:checked]:bg-green-900/30">
+                        <input type="radio" name="algo" value="walk" class="mt-1">
+                        <div>
+                            <span class="block font-bold text-green-300">方針1: 深い方向への探索 (User's)</span>
+                            <span class="block text-xs text-gray-400 mt-1">葉から開始し、隣接する方向の深さを測りながら一番深い方向へ進む。</span>
+                        </div>
+                    </label>
+
+                </div>
+            </div>
+            
+            <div class="p-4 border-b border-gray-700">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">操作</h2>
+                <div class="flex gap-2">
+                    <button id="btn-play" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-2 rounded transition-colors text-sm">▶ 再生</button>
+                    <button id="btn-step" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-2 rounded transition-colors text-sm">⏭ ステップ</button>
+                    <button id="btn-reset" class="flex-1 bg-red-600/80 hover:bg-red-500 text-white font-bold py-2 px-2 rounded transition-colors text-sm">⏹ リセット</button>
+                </div>
+                <div class="mt-4">
+                    <label class="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>アニメーション速度</span>
+                        <span id="speed-label">Normal</span>
+                    </label>
+                    <input type="range" id="speed-slider" min="1" max="100" value="50" class="w-full accent-blue-500">
+                </div>
+            </div>
+            
+            <div class="flex-1 p-4 overflow-y-auto flex flex-col gap-2 text-xs font-mono" id="log-panel">
+                <div class="text-gray-500">システム準備完了。アルゴリズムを選択し、再生ボタンを押してください。</div>
+            </div>
+        </aside>
+        
+        <!-- 右側キャンバス領域 -->
+        <div class="flex-1 relative bg-gray-950" id="canvas-container">
+            <canvas id="graph-canvas"></canvas>
+            
+            <!-- ステータスオーバーレイ -->
+            <div class="absolute top-6 left-6 bg-gray-900/90 p-4 rounded-lg border border-gray-700 max-w-lg pointer-events-none shadow-2xl backdrop-blur-sm transition-all duration-300 transform" id="status-overlay">
+                <h3 class="text-xs font-bold text-gray-400 uppercase mb-1" id="status-title">現在のステータス</h3>
+                <p id="status-text" class="text-lg text-gray-100">待機中</p>
+            </div>
+
+            <!-- 凡例 -->
+            <div class="absolute bottom-6 right-6 bg-gray-900/80 p-3 rounded border border-gray-700 pointer-events-none text-xs flex flex-col gap-2">
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#4b5563]"></div>通常ノード</div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#ef4444]"></div>注目ノード / 葉</div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#3b82f6]"></div>現在地 / 探索元</div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#eab308]"></div>探索先 / 測定中</div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#a855f7] shadow-[0_0_10px_#a855f7]"></div>木の中心 (MHT Root)</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // === State & Globals ===
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+        const logPanel = document.getElementById('log-panel');
+        const statusText = document.getElementById('status-text');
+        
+        let width, height;
+        let graph = { nodes: [], edges: [], adj: {} };
+        let vizState = getInitialVizState();
+        
+        let animationGen = null;
+        let isPlaying = false;
+        let playTimer = null;
+        
+        // Colors
+        const COLORS = {
+            node: '#4b5563', edge: '#374151', text: '#e5e7eb',
+            removedNode: 'rgba(75, 85, 99, 0.2)', removedEdge: 'rgba(55, 65, 81, 0.2)',
+            center: '#a855f7', highlightRed: '#ef4444', highlightBlue: '#3b82f6',
+            highlightYellow: '#eab308', pathGreen: '#22c55e'
+        };
+
+        // === Initialization ===
+        function resize() {
+            width = canvas.parentElement.clientWidth;
+            height = canvas.parentElement.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function getInitialVizState() {
+            return {
+                removedNodes: new Set(),
+                removedEdges: new Set(),
+                highlightNodes: new Map(), // id -> color
+                highlightEdges: new Map(), // "u-v" -> color
+                labels: new Map(), // id -> text
+                done: false
+            };
+        }
+
+        function log(msg, type='info') {
+            const div = document.createElement('div');
+            div.className = type === 'success' ? 'text-green-400' : (type === 'warn' ? 'text-yellow-400' : 'text-gray-300');
+            div.innerText = `> ${msg}`;
+            logPanel.appendChild(div);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+
+        function setStatus(title, msg) {
+            document.getElementById('status-title').innerText = title;
+            statusText.innerText = msg;
+        }
+
+        // === Graph Generation ===
+        function generateRandomTree(n) {
+            const nodes = [];
+            const edges = [];
+            const adj = {};
+            
+            for (let i = 0; i < n; i++) {
+                // 初期位置をランダムに散らす
+                nodes.push({
+                    id: i,
+                    x: Math.random() * width * 0.8 + width * 0.1,
+                    y: Math.random() * height * 0.8 + height * 0.1,
+                    vx: 0, vy: 0
+                });
+                adj[i] = new Set();
+            }
+
+            // ランダムツリー生成 (単純な接続)
+            for (let i = 1; i < n; i++) {
+                const parent = Math.floor(Math.random() * i);
+                edges.push([parent, i]);
+                adj[parent].add(i);
+                adj[i].add(parent);
+            }
+
+            return { nodes, edges, adj };
+        }
+
+        function initGraph() {
+            stopAnimation();
+            vizState = getInitialVizState();
+            logPanel.innerHTML = '';
+            
+            // 15〜25個のノードで木を生成
+            const numNodes = Math.floor(Math.random() * 11) + 15; 
+            graph = generateRandomTree(numNodes);
+            
+            // 物理シミュレーションを回して形を整える
+            for(let i=0; i<300; i++) applyPhysics();
+            
+            log(`${numNodes}ノードのランダムな木を生成しました。`);
+            setStatus('Ready', 'アルゴリズムを実行する準備ができました。');
+            
+            animationGen = null;
+        }
+
+        // === Physics Simulation (Force Directed Layout) ===
+        function applyPhysics() {
+            const k = 0.05; // バネ定数
+            const repulsion = 4000; // 斥力
+            const damping = 0.7; // 減衰
+            const centerPull = 0.005;
+
+            // 斥力
+            for (let i = 0; i < graph.nodes.length; i++) {
+                for (let j = i + 1; j < graph.nodes.length; j++) {
+                    let dx = graph.nodes[i].x - graph.nodes[j].x;
+                    let dy = graph.nodes[i].y - graph.nodes[j].y;
+                    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    if(dist > 300) continue; // 遠すぎる場合は計算省略
+                    let force = repulsion / (dist * dist);
+                    let fx = (dx / dist) * force;
+                    let fy = (dy / dist) * force;
+                    graph.nodes[i].vx += fx; graph.nodes[i].vy += fy;
+                    graph.nodes[j].vx -= fx; graph.nodes[j].vy -= fy;
+                }
+            }
+
+            // 引力 (エッジ)
+            for (let edge of graph.edges) {
+                let n1 = graph.nodes[edge[0]];
+                let n2 = graph.nodes[edge[1]];
+                let dx = n2.x - n1.x;
+                let dy = n2.y - n1.y;
+                let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                let force = (dist - 80) * k; // 自然長80
+                let fx = (dx / dist) * force;
+                let fy = (dy / dist) * force;
+                n1.vx += fx; n1.vy += fy;
+                n2.vx -= fx; n2.vy -= fy;
+            }
+
+            // 境界と中心への引力、更新
+            for (let node of graph.nodes) {
+                node.vx += (width / 2 - node.x) * centerPull;
+                node.vy += (height / 2 - node.y) * centerPull;
+                
+                node.vx *= damping;
+                node.vy *= damping;
+                
+                node.x += node.vx;
+                node.y += node.vy;
+
+                // 画面外に出ないように制限
+                node.x = Math.max(20, Math.min(width - 20, node.x));
+                node.y = Math.max(20, Math.min(height - 20, node.y));
+            }
+        }
+
+        // === Rendering ===
+        function draw() {
+            applyPhysics(); // 毎フレーム物理計算
+            
+            ctx.clearRect(0, 0, width, height);
+
+            // エッジ描画
+            for (let edge of graph.edges) {
+                let u = edge[0], v = edge[1];
+                let edgeId = u < v ? `${u}-${v}` : `${v}-${u}`;
+                let isRemoved = vizState.removedEdges.has(edgeId);
+                
+                ctx.beginPath();
+                ctx.moveTo(graph.nodes[u].x, graph.nodes[u].y);
+                ctx.lineTo(graph.nodes[v].x, graph.nodes[v].y);
+                
+                if (vizState.highlightEdges.has(edgeId)) {
+                    ctx.strokeStyle = vizState.highlightEdges.get(edgeId);
+                    ctx.lineWidth = 4;
+                } else if (isRemoved) {
+                    ctx.strokeStyle = COLORS.removedEdge;
+                    ctx.lineWidth = 1;
+                    // ctx.setLineDash([5, 5]);
+                } else {
+                    ctx.strokeStyle = COLORS.edge;
+                    ctx.lineWidth = 2;
+                }
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // ノード描画
+            for (let node of graph.nodes) {
+                let isRemoved = vizState.removedNodes.has(node.id);
+                let isCenter = false;
+                
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 14, 0, 2 * Math.PI);
+                
+                if (vizState.highlightNodes.has(node.id)) {
+                    ctx.fillStyle = vizState.highlightNodes.get(node.id);
+                    if (ctx.fillStyle === COLORS.center) isCenter = true;
+                } else if (isRemoved) {
+                    ctx.fillStyle = COLORS.removedNode;
+                } else {
+                    ctx.fillStyle = COLORS.node;
+                }
+                
+                // 中心の光沢エフェクト
+                if(isCenter) {
+                    ctx.shadowColor = COLORS.center;
+                    ctx.shadowBlur = 15;
+                }
+
+                ctx.fill();
+                ctx.shadowBlur = 0; // リセット
+                
+                // ノードIDテキスト
+                ctx.fillStyle = isRemoved ? 'rgba(255,255,255,0.2)' : COLORS.text;
+                ctx.font = "10px monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(node.id, node.x, node.y);
+
+                // ラベルテキスト描画
+                if (vizState.labels.has(node.id)) {
+                    ctx.fillStyle = COLORS.text;
+                    ctx.font = "12px sans-serif";
+                    ctx.textAlign = "left";
+                    
+                    // 背景
+                    let text = vizState.labels.get(node.id);
+                    let textWidth = ctx.measureText(text).width;
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(node.x + 15, node.y - 15, textWidth + 8, 20);
+                    
+                    ctx.fillStyle = vizState.highlightNodes.has(node.id) ? vizState.highlightNodes.get(node.id) : COLORS.text;
+                    ctx.fillText(text, node.x + 19, node.y - 5);
+                }
+            }
+            
+            requestAnimationFrame(draw);
+        }
+
+        // === Algorithm Implementations (Generators) ===
+
+        // 共通ユーティリティ: 隣接リストのディープコピー
+        function getAdj() {
+            let adj = {};
+            for(let key in graph.adj) {
+                adj[key] = new Set(graph.adj[key]);
+            }
+            return adj;
+        }
+
+        // --- 方針2: Leaves Trimming ---
+        function* algoTrim() {
+            let adj = getAdj();
+            let activeNodes = new Set(graph.nodes.map(n => n.id));
+            let remaining = activeNodes.size;
+            let stepNum = 1;
+
+            yield { type: 'info', msg: "アルゴリズム開始: グラフの外側(葉)から削っていきます。" };
+
+            while (remaining > 2) {
+                let leaves = [];
+                for (let u of activeNodes) {
+                    // アクティブなグラフ上での次数を計算
+                    let degree = 0;
+                    for (let v of adj[u]) {
+                        if (activeNodes.has(v)) degree++;
+                    }
+                    if (degree <= 1) leaves.push(u);
+                }
+
+                yield { 
+                    type: 'highlight_leaves', 
+                    leaves: leaves, 
+                    msg: `ステップ ${stepNum}: 現在の葉ノード(${leaves.length}個)を特定しました。`,
+                    title: '葉ノードの特定'
+                };
+
+                for (let u of leaves) {
+                    activeNodes.delete(u);
+                    for (let v of adj[u]) {
+                        adj[v].delete(u); // v から u への接続も削除
+                    }
+                }
+                remaining -= leaves.length;
+
+                yield { 
+                    type: 'remove_leaves', 
+                    leaves: leaves, 
+                    msg: `特定した葉ノードとそれに繋がるエッジを削除しました。残りノード数: ${remaining}`,
+                    title: '刈り込み実行'
+                };
+                stepNum++;
+            }
+
+            yield { 
+                type: 'done', 
+                centers: Array.from(activeNodes), 
+                msg: `中心に到達しました！ MHTの中心は ${Array.from(activeNodes).join(', ')} です。`,
+                title: '完了'
+            };
+        }
+
+        // --- 方針3: Double BFS (Diameter) ---
+        function* algoDoubleBFS() {
+            let adj = getAdj();
+            
+            // 1. 適当なノードからBFSして最遠点Aを見つける
+            let startNode = 0;
+            yield { type: 'info', msg: `任意のノード(${startNode})から探索を開始します。`, title: 'フェーズ1開始' };
+            
+            let res1 = yield* runAnimatedBFS(startNode, adj, "フェーズ1");
+            let nodeA = res1.farthest;
+            
+            yield { 
+                type: 'found_point', 
+                node: nodeA, label: 'Point A',
+                msg: `最も遠い点A (ノード ${nodeA}) を見つけました。これが直径の片端です。`,
+                title: 'フェーズ1完了'
+            };
+
+            // 2. 点AからBFSして最遠点B（と経路）を見つける
+            yield { type: 'info', msg: `点A(ノード${nodeA})から再度探索を行い、反対側の端を探します。`, title: 'フェーズ2開始' };
+            
+            let res2 = yield* runAnimatedBFS(nodeA, adj, "フェーズ2");
+            let nodeB = res2.farthest;
+            let parentMap = res2.parent;
+
+            yield { 
+                type: 'found_points', 
+                nodeA: nodeA, nodeB: nodeB,
+                msg: `反対側の端、点B (ノード ${nodeB}) を見つけました。AからBのパスが木の直径です。`,
+                title: 'フェーズ2完了'
+            };
+
+            // パス復元
+            let path = [];
+            let curr = nodeB;
+            while(curr !== null) {
+                path.push(curr);
+                curr = parentMap[curr];
+            }
+            // path は B -> ... -> A なので反転させるかそのまま使う
+            yield { 
+                type: 'show_path', 
+                path: path, 
+                msg: `直径の長さは ${path.length - 1} です。経路をハイライトします。`,
+                title: '直径の特定'
+            };
+
+            // 中間の計算
+            let centers = [];
+            let mid = Math.floor(path.length / 2);
+            if (path.length % 2 === 0) {
+                centers.push(path[mid - 1], path[mid]);
+            } else {
+                centers.push(path[mid]);
+            }
+
+            yield { 
+                type: 'done', 
+                centers: centers, 
+                msg: `直径の真ん中にあるノード ${centers.join(', ')} が木の中心です！`,
+                title: '完了'
+            };
+        }
+
+        function* runAnimatedBFS(start, adj, phasePrefix) {
+            let q = [start];
+            let visited = new Set([start]);
+            let parent = { [start]: null };
+            let dist = { [start]: 0 };
+            let farthest = start;
+            let maxDist = 0;
+
+            yield { type: 'bfs_init', node: start, title: phasePrefix };
+
+            while (q.length > 0) {
+                let curr = q.shift();
+                
+                for (let v of adj[curr]) {
+                    if (!visited.has(v)) {
+                        visited.add(v);
+                        parent[v] = curr;
+                        dist[v] = dist[curr] + 1;
+                        q.push(v);
+                        
+                        if (dist[v] > maxDist) {
+                            maxDist = dist[v];
+                            farthest = v;
+                        }
+
+                        yield { 
+                            type: 'bfs_step', 
+                            curr: curr, neighbor: v, dist: dist[v],
+                            msg: `ノード${v}を訪問。${start}からの距離: ${dist[v]}`,
+                            title: phasePrefix + ' 探索中'
+                        };
+                    }
+                }
+            }
+            return { farthest, parent };
+        }
+
+        // --- 方針1: Deepest Path Walk (User's Approach Interpretation) ---
+        function* algoWalk() {
+            let adj = getAdj();
+            // 葉からスタート
+            let startNode = graph.nodes.find(n => adj[n.id].size === 1).id;
+            let curr = startNode;
+
+            yield { 
+                type: 'info', 
+                node: curr, 
+                msg: `葉ノード(${curr})を起点として、各方向の最大深さを一度計算します。`,
+                title: '事前計算'
+            };
+
+            let nodeHeight = {};
+            
+            // DFSで各ノードを根としたときの高さを計算 (ユーザーの元の calculate_height に相当)
+            function calculateHeight(node, p) {
+                let maxH = 0;
+                for (let v of adj[node]) {
+                    if (v !== p) {
+                        let h = calculateHeight(v, node);
+                        if (h > maxH) maxH = h;
+                    }
+                }
+                nodeHeight[node] = maxH + 1;
+                return maxH + 1;
+            }
+
+            calculateHeight(curr, null);
+
+            yield {
+                type: 'show_heights',
+                heights: nodeHeight,
+                start: curr,
+                msg: `各ノードの「その先の最大深さ」を事前計算しました。この情報を使って進みます。`,
+                title: '計算完了'
+            };
+
+            let height = 0;
+
+            while (adj[curr].size > 0) {
+                yield { 
+                    type: 'eval_curr', 
+                    node: curr, 
+                    msg: `現在地(${curr})。隣接ノードの事前計算された深さを比較します。`,
+                    title: '方向の評価'
+                };
+
+                let maxOtherHeight = 0;
+                let neighbors = Array.from(adj[curr]);
+
+                for (let otherNode of neighbors) {
+                    // 逆辺の削除
+                    adj[otherNode].delete(curr);
+                    if (maxOtherHeight < nodeHeight[otherNode]) {
+                        maxOtherHeight = nodeHeight[otherNode];
+                    }
+                }
+
+                let maxOtherCount = 0;
+                let maxOtherNode = -1;
+                let secondaryHeight = 0;
+
+                for (let otherNode of neighbors) {
+                    yield { 
+                        type: 'eval_neighbor_precalc', 
+                        curr: curr, neighbor: otherNode, 
+                        msg: `方向(${otherNode})の深さは ${nodeHeight[otherNode]} です。`,
+                        title: '深さ確認'
+                    };
+
+                    if (nodeHeight[otherNode] === maxOtherHeight) {
+                        maxOtherCount++;
+                        maxOtherNode = otherNode;
+                    } else if (secondaryHeight < nodeHeight[otherNode]) {
+                        secondaryHeight = nodeHeight[otherNode];
+                    }
+                }
+
+                height = Math.max(height + 1, secondaryHeight + 1);
+                
+                yield {
+                    type: 'update_base_height',
+                    curr: curr,
+                    height: height,
+                    maxOtherHeight: maxOtherHeight,
+                    msg: `現在地の基準高さが ${height} となりました。最も深い方向(${maxOtherHeight})と比較して中心を判定します。`,
+                    title: '中心判定'
+                };
+
+                if (maxOtherCount > 1) {
+                    yield { type: 'done', centers: [curr], msg: `最大深さ(${maxOtherHeight})の方向が複数あります。中心は ${curr} です！`, title: '完了' };
+                    break;
+                }
+
+                if (maxOtherHeight === height) {
+                    yield { type: 'done', centers: [curr, maxOtherNode], msg: `最大深さ(${maxOtherHeight})と基準高さ(${height})が拮抗しました。中心は ${curr} と ${maxOtherNode} です！`, title: '完了' };
+                    break;
+                }
+
+                if (maxOtherHeight < height) {
+                    yield { type: 'done', centers: [curr], msg: `最大深さ(${maxOtherHeight})が基準高さ(${height})を下回って逆転しました。中心は ${curr} です！`, title: '完了' };
+                    break;
+                }
+
+                // 移動
+                let prev = curr;
+                curr = maxOtherNode;
+                adj[prev].delete(curr); // 進んだ方向の辺を削除
+
+                yield { 
+                    type: 'move', 
+                    from: prev, to: curr, 
+                    msg: `最も深い方向(${curr})へ1歩進みます。`,
+                    title: '移動'
+                };
+            }
+        }
+
+        // === Step Handler ===
+        function handleStep(step) {
+            log(step.msg, step.type === 'done' ? 'success' : 'info');
+            setStatus(step.title || '実行中', step.msg);
+
+            // ステップに応じた視覚状態の更新
+            switch (step.type) {
+                // --- Trimming ---
+                case 'highlight_leaves':
+                    vizState.highlightNodes.clear();
+                    step.leaves.forEach(l => vizState.highlightNodes.set(l, COLORS.highlightRed));
+                    break;
+                case 'remove_leaves':
+                    vizState.highlightNodes.clear();
+                    step.leaves.forEach(l => {
+                        vizState.removedNodes.add(l);
+                        // 接続されていたエッジも削除扱いにする
+                        graph.edges.forEach(e => {
+                            if(e[0] === l || e[1] === l) {
+                                let edgeId = e[0] < e[1] ? `${e[0]}-${e[1]}` : `${e[1]}-${e[0]}`;
+                                vizState.removedEdges.add(edgeId);
+                            }
+                        });
+                    });
+                    break;
+                
+                // --- Double BFS ---
+                case 'bfs_init':
+                    vizState.highlightNodes.clear();
+                    vizState.labels.clear();
+                    vizState.highlightNodes.set(step.node, COLORS.highlightBlue);
+                    break;
+                case 'bfs_step':
+                    vizState.highlightNodes.set(step.curr, COLORS.highlightBlue);
+                    vizState.highlightNodes.set(step.neighbor, COLORS.highlightYellow);
+                    vizState.labels.set(step.neighbor, `dist: ${step.dist}`);
+                    break;
+                case 'found_point':
+                    vizState.highlightNodes.clear();
+                    vizState.labels.clear();
+                    vizState.highlightNodes.set(step.node, COLORS.highlightRed);
+                    vizState.labels.set(step.node, step.label);
+                    break;
+                case 'found_points':
+                    vizState.highlightNodes.clear();
+                    vizState.labels.clear();
+                    vizState.highlightNodes.set(step.nodeA, COLORS.highlightRed);
+                    vizState.highlightNodes.set(step.nodeB, COLORS.highlightRed);
+                    vizState.labels.set(step.nodeA, 'Point A');
+                    vizState.labels.set(step.nodeB, 'Point B');
+                    break;
+                case 'show_path':
+                    for(let i=0; i<step.path.length-1; i++) {
+                        let u = step.path[i];
+                        let v = step.path[i+1];
+                        let edgeId = u < v ? `${u}-${v}` : `${v}-${u}`;
+                        vizState.highlightEdges.set(edgeId, COLORS.pathGreen);
+                    }
+                    break;
+
+                // --- User Walk ---
+                case 'info':
+                    if(step.node !== undefined) {
+                        vizState.highlightNodes.clear();
+                        vizState.highlightNodes.set(step.node, COLORS.highlightBlue);
+                    }
+                    break;
+                case 'show_heights':
+                    vizState.highlightNodes.clear();
+                    vizState.labels.clear();
+                    vizState.highlightNodes.set(step.start, COLORS.highlightBlue);
+                    for (let id in step.heights) {
+                        if (parseInt(id) !== step.start) {
+                            vizState.labels.set(parseInt(id), `H:${step.heights[id]}`);
+                        }
+                    }
+                    break;
+                case 'eval_curr':
+                    vizState.highlightNodes.clear();
+                    // 全体のラベル(H:xx)は残しつつ、現在地をハイライト
+                    vizState.highlightNodes.set(step.node, COLORS.highlightBlue);
+                    break;
+                case 'eval_neighbor_precalc':
+                    vizState.highlightNodes.set(step.neighbor, COLORS.highlightYellow);
+                    break;
+                case 'update_base_height':
+                    vizState.highlightNodes.clear();
+                    vizState.highlightNodes.set(step.curr, COLORS.highlightBlue);
+                    // 現在地に基準高さのラベルを表示
+                    vizState.labels.set(step.curr, `基準:${step.height}`);
+                    break;
+                case 'move':
+                    vizState.highlightNodes.clear();
+                    vizState.highlightNodes.set(step.to, COLORS.highlightBlue);
+                    // 通過したエッジをハイライト
+                    let edgeId = step.from < step.to ? `${step.from}-${step.to}` : `${step.to}-${step.from}`;
+                    vizState.highlightEdges.set(edgeId, COLORS.highlightBlue);
+                    break;
+
+                // --- Common ---
+                case 'done':
+                    vizState.highlightNodes.clear();
+                    vizState.labels.clear();
+                    step.centers.forEach(c => {
+                        vizState.highlightNodes.set(c, COLORS.center);
+                        vizState.labels.set(c, 'CENTER');
+                    });
+                    vizState.done = true;
+                    stopAnimation();
+                    break;
+            }
+        }
+
+        // === Control Logic ===
+        function getSelectedAlgo() {
+            return document.querySelector('input[name="algo"]:checked').value;
+        }
+
+        function initAnimationIfNeeded() {
+            if (!animationGen) {
+                vizState = getInitialVizState(); // 状態リセット
+                const algo = getSelectedAlgo();
+                if (algo === 'trim') animationGen = algoTrim();
+                else if (algo === 'doubledfs') animationGen = algoDoubleBFS();
+                else if (algo === 'walk') animationGen = algoWalk();
+                
+                log('------------------', 'info');
+                log(`アルゴリズムを変更・リセットしました。`, 'info');
+            }
+        }
+
+        function stepAnimation() {
+            initAnimationIfNeeded();
+            if (vizState.done) return false;
+            
+            const result = animationGen.next();
+            if (!result.done) {
+                handleStep(result.value);
+                return true;
+            }
+            return false;
+        }
+
+        function playAnimation() {
+            if (isPlaying) return;
+            if (vizState.done) {
+                // 終わっていたら再生成
+                animationGen = null;
+                initAnimationIfNeeded();
+            }
+            
+            isPlaying = true;
+            document.getElementById('btn-play').innerText = '⏸ 一時停止';
+            document.getElementById('btn-play').classList.replace('bg-blue-600', 'bg-yellow-600');
+            document.getElementById('btn-play').classList.replace('hover:bg-blue-500', 'hover:bg-yellow-500');
+
+            const speedValue = document.getElementById('speed-slider').value;
+            // 1(遅い) 〜 100(速い) をインターバル(ms)に変換 (1000ms 〜 50ms)
+            const interval = 1050 - (speedValue * 10);
+
+            playTimer = setInterval(() => {
+                if (!stepAnimation()) {
+                    stopAnimation();
+                }
+            }, interval);
+        }
+
+        function stopAnimation() {
+            if (!isPlaying) return;
+            isPlaying = false;
+            clearInterval(playTimer);
+            document.getElementById('btn-play').innerText = '▶ 再生';
+            document.getElementById('btn-play').classList.replace('bg-yellow-600', 'bg-blue-600');
+            document.getElementById('btn-play').classList.replace('hover:bg-yellow-500', 'hover:bg-blue-500');
+        }
+
+        // === Event Listeners ===
+        document.getElementById('btn-regen').addEventListener('click', initGraph);
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            stopAnimation();
+            animationGen = null;
+            vizState = getInitialVizState();
+            log('状態をリセットしました。');
+            setStatus('Ready', '待機中');
+        });
+        
+        document.getElementById('btn-step').addEventListener('click', () => {
+            stopAnimation();
+            stepAnimation();
+        });
+        
+        document.getElementById('btn-play').addEventListener('click', () => {
+            if (isPlaying) stopAnimation();
+            else playAnimation();
+        });
+
+        // アルゴリズム変更時は状態リセット
+        document.getElementById('algo-selectors').addEventListener('change', () => {
+            stopAnimation();
+            animationGen = null;
+            vizState = getInitialVizState();
+            setStatus('Ready', 'アルゴリズムを変更しました。再生を押してください。');
+        });
+
+        // 速度スライダー
+        document.getElementById('speed-slider').addEventListener('input', (e) => {
+            let val = e.target.value;
+            let label = 'Normal';
+            if(val > 80) label = 'Fast';
+            else if (val < 20) label = 'Slow';
+            document.getElementById('speed-label').innerText = label;
+            
+            if (isPlaying) {
+                stopAnimation();
+                playAnimation(); // インターバル再設定のため
+            }
+        });
+
+        // 起動処理
+        initGraph();
+        requestAnimationFrame(draw);
+
+    </script>
+</body>
+</html>
