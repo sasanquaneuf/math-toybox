@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>二分木構築のinorder/preorder比較 - Google Gemini - Conversation Export</title>
+  <style>
+    :root{
+      color-scheme: light dark;
+      --bg:#0b0c10;
+      --card: rgba(255,255,255,0.06);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.65);
+      --border: rgba(255,255,255,0.12);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo", sans-serif;
+      --userAccent: rgba(96, 165, 250, 0.25);
+      --modelAccent: rgba(52, 211, 153, 0.22);
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f7fb;
+        --card: rgba(0,0,0,0.04);
+        --text: rgba(0,0,0,0.90);
+        --muted: rgba(0,0,0,0.60);
+        --border: rgba(0,0,0,0.12);
+        --userAccent: rgba(59, 130, 246, 0.18);
+        --modelAccent: rgba(16, 185, 129, 0.16);
+      }
+    }
+    body { margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); line-height:1.55; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+    .header { border:1px solid var(--border); background:var(--card); border-radius:14px; padding:16px 16px 12px; margin-bottom:16px; }
+    .title { font-size:18px; font-weight:800; margin:0 0 6px; }
+    .meta { font-size:12px; color:var(--muted); display:flex; flex-wrap:wrap; gap:10px; }
+    .meta a { color: inherit; text-decoration:none; border-bottom:1px dotted var(--border); }
+    .meta a:hover { border-bottom-style: solid; }
+
+    .note { border:1px solid var(--border); background:var(--card); border-radius:14px; padding:14px 16px; margin:12px 0 16px; }
+    .note-title { font-weight:700; margin-bottom:6px; font-size:13px; }
+    .note-body { white-space:pre-wrap; font-size:13px; }
+
+    .timeline { display:flex; flex-direction:column; gap: 12px; }
+
+    .turn {
+      border:1px solid var(--border);
+      background:var(--card);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .turn.user { box-shadow: inset 0 0 0 9999px var(--userAccent); }
+    .turn.model { box-shadow: inset 0 0 0 9999px var(--modelAccent); }
+
+    .turn-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      background: rgba(0,0,0,0.06);
+    }
+    @media (prefers-color-scheme: light){
+      .turn-head { background: rgba(0,0,0,0.02); }
+    }
+    .role {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .turn-body {
+      padding: 12px 12px 14px;
+      overflow-wrap:anywhere;
+      word-break: break-word;
+    }
+
+    /* 装飾は維持 */
+    pre, code { font-family: var(--mono); }
+    pre {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      overflow: auto;
+      white-space: pre;
+      margin: 12px 0;
+    }
+    @media (prefers-color-scheme: light) { pre { background: rgba(0,0,0,0.04); } }
+    code {
+      padding: 0.15em 0.35em;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.10);
+    }
+    h1,h2,h3 { margin: 16px 0 8px; }
+    p { margin: 8px 0; }
+    ul,ol { margin: 8px 0 8px 24px; }
+    blockquote {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-left: 4px solid var(--border);
+      background: rgba(0,0,0,0.10);
+      border-radius: 10px;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+    th, td { border: 1px solid var(--border); padding: 8px; vertical-align: top; }
+    img { max-width: 100%; height: auto; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">二分木構築のinorder/preorder比較 - Google Gemini</h1>
+      <div class="meta">
+        <div>Exported: <span>2026-04-13T00:28:49.686Z</span></div>
+      </div>
+    </div>
+    
+    <div class="timeline">
+      
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container enable-2026q1-formatting-improvements" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><div class="query-content" id="user-query-content-0" jslog="275422;track:impression,attention"><span class="user-query-bubble-with-background enable-2026q1-formatting-improvements"><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><p class="query-text-line">以下はinorder/preorderのnodeの並びから、元の木を構築する方法についての議論です。inorderを逐次処理していくバージョンと、preorderを逐次処理するバージョンのロジックがあります。それぞれのロジックにおいて、どのような処理がなされるかのビジュアライズとコードの表示が可能なHTMLファイルを作成してください。以下、議論 <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> ---- <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> まず、左側子孫と右側子孫という言葉を作りましょう。あるノードの左の子供の子孫と右側の子の子孫です。あるノードが inorder で出てきたときには、左側子孫はもう全員出てきていますね。また、左親と右親も定義します。自分が左側の子であるときの親が左親、右側の子であるときは右親です。 <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> inorder での構築は、まず、観察として「左、親、右」の順が再帰的になっているんですよね。で、「親、左、右」が preorder です。 <!----><!----></p><p class="query-text-line"> だから、inorder 順にノードを作っていくと、はじめは親が不明です。左親の場合はまだ出てきていないし、右親の場合は、(きちんと数えれば分かるんですが)ちょっと計算する必要があります。そこで親不明ノードの待機所を作ります。 <!----><!----></p><p class="query-text-line"> で、どんどんノードを作っていくと、preorder で今までよりも若いノードが出てきます。これはもうでてきたノードの誰かの親です。で、「親不明ノードの待機所」をよく見ます。そうすると、左の子供が見つかります。そして、左の子供の右の子供、その右の子供、その右の子供、という列が見つかります。それを回収してきます。 <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> しかし、これはかなりトリッキーですね。  <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> liquorice —  <!----><!----></p><p class="query-text-line"> 昨日 21:10 <!----><!----></p><p class="query-text-line"> あるノードが preorder で出てきたときには、左側子孫はもう全員出てきていますね。 <!----><!----></p><p class="query-text-line"> inorderですかね？ <!----><!----></p><p class="query-text-line"> Keita Oda —  <!----><!----></p><p class="query-text-line"> 昨日 21:11 <!----><!----></p><p class="query-text-line"> 直しました。 <!----><!----></p><p class="query-text-line"> 「A の右の子供が B の場合、インデックスの差は inorder では、B の左の子孫の数だけ離れており、 preorder では、A の左の子孫の数だけ離れている」という性質を使うと本当は待機所に置かないでもいいんですが、ややこしいですよね。  <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> liquorice —  <!----><!----></p><p class="query-text-line"> 昨日 21:56 <!----><!----></p><p class="query-text-line"> とりあえず仮の右親を決めておくと簡単に書けますね。Inorder順に見ているので、後から来たノードが左親になる可能性があります。Preorderのインデックスで上下関係が決まり、inorderのインデックスで左右関係が決まりますね。 <!----><!----></p><p class="query-text-line"><!----><br><!----></p><p class="query-text-line"> class Solution: <!----><!----></p><p class="query-text-line">     def buildTree(self, preorder: List[int], inorder: List[int]) -&gt; Optional[TreeNode]: <!----><!----></p><p class="query-text-line">         priority = {val: i for i, val in enumerate(preorder)} <!----><!----></p><p class="query-text-line">         stack = [] <!----><!----></p><p class="query-text-line">         for val in inorder: <!----><!----></p><p class="query-text-line">             node = TreeNode(val) <!----><!----></p><p class="query-text-line">             while stack and priority[stack[-1].val] &gt; priority[val]: <!----><!----></p><p class="query-text-line">                 node.left = stack.pop() <!----><!----></p><p class="query-text-line">             if stack: <!----><!----></p><p class="query-text-line">                 stack[-1].right = node <!----><!----></p><p class="query-text-line">             stack.append(node) <!----><!----></p><p class="query-text-line">         return stack[0] <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----><!----><!----></div><!----><!----><!----></div><!----><!----><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            Gemini の回答
+<div class="container"><message-content id="message-content-id-r_6bff1e2df48a8ade"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color" id="model-response-message-contentr_6bff1e2df48a8ade" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">とても興味深い議論ですね！提示していただいた <code data-path-to-node="0" data-index-in-node="23">inorder</code> を逐次処理するアプローチは、通常 <code data-path-to-node="0" data-index-in-node="48">preorder</code> をベースにする解説が多い中で、非常にユニークで洞察に満ちています。</p><p data-path-to-node="1">「親不明ノードの待機所（スタック）」という概念と、「<code data-path-to-node="1" data-index-in-node="26">preorder</code> の出現順（優先度）によって親子関係を確定させる」というロジックは、二分木の本質的な構造をうまく捉えています。後から来るノードが実は左親だった（スタックからPopされて左の子になる）という処理の流れは、最初はトリッキーに感じますが、ビジュアライズするとその美しさがよく分かります。</p><p data-path-to-node="2">ご要望の通り、**「inorder を逐次処理するバージョン」<b data-path-to-node="2" data-index-in-node="31">と、比較対象として一般的な</b>「preorder を逐次処理するバージョン」**の両方のロジックをシミュレーションし、木構造とスタック（待機所）の状態をステップ実行でビジュアライズできる HTML ファイルを作成しました。</p><p data-path-to-node="3">以下のコードを <code data-path-to-node="3" data-index-in-node="8">tree_visualizer.html</code> などの名前で保存し、Webブラウザ（Chrome, Edge, Safariなど）で開いてみてください。</p><response-element class="" ng-version="0.0.0-PLACEHOLDER"><!----><!----><!----><!----><!----><!----><code-block style=""><!----><!----><div class="code-block" jslog="223238;track:impression,attention;BardVeMetadataKey:[[&quot;r_6bff1e2df48a8ade&quot;,&quot;c_0e9e68079933adfe&quot;,null,&quot;rc_59fd16371bafbaa0&quot;,null,null,&quot;ja&quot;,null,1,null,null,1,0]]" style="display: block;"><div class="code-block-decoration header-formatted gds-title-s" style=""><span>HTML</span><!----><!----></div><!----><div class="formatted-code-block-internal-container"><div class="animated-opacity"><pre><code role="text" data-test-id="code-content" class="code-container formatted"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"ja"</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">"UTF-8"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width, initial-scale=1.0"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Tree Construction Visualizer<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"https://d3js.org/d3.v7.min.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+        <span class="hljs-selector-tag">body</span> { <span class="hljs-attribute">font-family</span>: -apple-system, BlinkMacSystemFont, <span class="hljs-string">"Segoe UI"</span>, Roboto, Helvetica, Arial, sans-serif; <span class="hljs-attribute">margin</span>: <span class="hljs-number">0</span>; <span class="hljs-attribute">padding</span>: <span class="hljs-number">20px</span>; <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#f7f9fc</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#333</span>; }
+        <span class="hljs-selector-tag">h1</span> { <span class="hljs-attribute">font-size</span>: <span class="hljs-number">24px</span>; <span class="hljs-attribute">text-align</span>: center; <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.container</span> { <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">flex-direction</span>: column; <span class="hljs-attribute">max-width</span>: <span class="hljs-number">1200px</span>; <span class="hljs-attribute">margin</span>: <span class="hljs-number">0</span> auto; gap: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.controls</span> { <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">justify-content</span>: space-between; <span class="hljs-attribute">align-items</span>: center; <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">padding</span>: <span class="hljs-number">15px</span> <span class="hljs-number">20px</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> <span class="hljs-number">2px</span> <span class="hljs-number">4px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0.1</span>); }
+        <span class="hljs-selector-class">.controls</span> select, <span class="hljs-selector-class">.controls</span> <span class="hljs-selector-tag">button</span> { <span class="hljs-attribute">padding</span>: <span class="hljs-number">8px</span> <span class="hljs-number">16px</span>; <span class="hljs-attribute">font-size</span>: <span class="hljs-number">14px</span>; <span class="hljs-attribute">border</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#ccc</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">4px</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">cursor</span>: pointer; }
+        <span class="hljs-selector-class">.controls</span> <span class="hljs-selector-tag">button</span><span class="hljs-selector-pseudo">:hover</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#eef2f5</span>; }
+        <span class="hljs-selector-class">.controls</span> <span class="hljs-selector-tag">button</span><span class="hljs-selector-pseudo">:disabled</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#f0f0f0</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#aaa</span>; <span class="hljs-attribute">cursor</span>: not-allowed; }
+        <span class="hljs-selector-class">.main-panel</span> { <span class="hljs-attribute">display</span>: flex; gap: <span class="hljs-number">20px</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">600px</span>; }
+        <span class="hljs-selector-class">.left-panel</span> { <span class="hljs-attribute">flex</span>: <span class="hljs-number">1</span>; <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">flex-direction</span>: column; gap: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.right-panel</span> { <span class="hljs-attribute">flex</span>: <span class="hljs-number">2</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> <span class="hljs-number">2px</span> <span class="hljs-number">4px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0.1</span>); <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">flex-direction</span>: column; <span class="hljs-attribute">padding</span>: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.box</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> <span class="hljs-number">2px</span> <span class="hljs-number">4px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0.1</span>); <span class="hljs-attribute">padding</span>: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.box</span> <span class="hljs-selector-tag">h3</span> { <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">0</span>; <span class="hljs-attribute">font-size</span>: <span class="hljs-number">16px</span>; <span class="hljs-attribute">border-bottom</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#eee</span>; <span class="hljs-attribute">padding-bottom</span>: <span class="hljs-number">10px</span>; }
+        <span class="hljs-selector-class">.array-display</span> { <span class="hljs-attribute">font-family</span>: monospace; <span class="hljs-attribute">font-size</span>: <span class="hljs-number">16px</span>; <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">10px</span>; }
+        <span class="hljs-selector-class">.highlight</span> { <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#ffe066</span>; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">padding</span>: <span class="hljs-number">2px</span> <span class="hljs-number">4px</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">4px</span>; }
+        <span class="hljs-selector-class">.stack-container</span> { <span class="hljs-attribute">display</span>: flex; gap: <span class="hljs-number">10px</span>; <span class="hljs-attribute">flex-wrap</span>: wrap; }
+        <span class="hljs-selector-class">.stack-item</span> { <span class="hljs-attribute">width</span>: <span class="hljs-number">40px</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">40px</span>; <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> solid <span class="hljs-number">#4a90e2</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">align-items</span>: center; <span class="hljs-attribute">justify-content</span>: center; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">background</span>: <span class="hljs-number">#eef5ff</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#2c3e50</span>; }
+        <span class="hljs-selector-class">.description</span> { <span class="hljs-attribute">font-size</span>: <span class="hljs-number">16px</span>; <span class="hljs-attribute">line-height</span>: <span class="hljs-number">1.5</span>; <span class="hljs-attribute">min-height</span>: <span class="hljs-number">80px</span>; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">color</span>: <span class="hljs-number">#2c3e50</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#e8f4fd</span>; <span class="hljs-attribute">padding</span>: <span class="hljs-number">15px</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">border-left</span>: <span class="hljs-number">4px</span> solid <span class="hljs-number">#4a90e2</span>; }
+        svg { <span class="hljs-attribute">flex</span>: <span class="hljs-number">1</span>; <span class="hljs-attribute">width</span>: <span class="hljs-number">100%</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">100%</span>; }
+        pre { <span class="hljs-attribute">margin</span>: <span class="hljs-number">0</span>; <span class="hljs-attribute">font-size</span>: <span class="hljs-number">13px</span>; <span class="hljs-attribute">line-height</span>: <span class="hljs-number">1.4</span>; <span class="hljs-attribute">overflow-x</span>: auto; }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>二分木構築 ビジュアライザ (Inorder / Preorder)<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"container"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"controls"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"algoSelect"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">strong</span>&gt;</span>ロジック選択:<span class="hljs-tag">&lt;/<span class="hljs-name">strong</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"algoSelect"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"inorder"</span>&gt;</span>Inorder 逐次処理バージョン<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"preorder"</span>&gt;</span>Preorder 逐次処理バージョン<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btnPrev"</span>&gt;</span>← 前のステップ<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"stepCounter"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"margin: 0 15px; font-weight: bold;"</span>&gt;</span>Step 0 / 0<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btnNext"</span>&gt;</span>次のステップ →<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"main-panel"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"left-panel"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"box"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>配列の状態<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"array-display"</span>&gt;</span>Preorder: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"preorderArr"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"array-display"</span>&gt;</span>Inorder : <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"inorderArr"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"box"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>待機所 (Stack)<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"stack-container"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"stackDisplay"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"box"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"flex: 1;"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>アルゴリズムの解説<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"descDisplay"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"description"</span>&gt;</span>初期状態<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"right-panel"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"margin-top: 0; margin-bottom: 10px;"</span>&gt;</span>構築中の木構造<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"treeContainer"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"flex: 1;"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+    <span class="hljs-keyword">const</span> preorderData = [<span class="hljs-number">3</span>, <span class="hljs-number">9</span>, <span class="hljs-number">20</span>, <span class="hljs-number">15</span>, <span class="hljs-number">7</span>];
+    <span class="hljs-keyword">const</span> inorderData = [<span class="hljs-number">9</span>, <span class="hljs-number">3</span>, <span class="hljs-number">15</span>, <span class="hljs-number">20</span>, <span class="hljs-number">7</span>];
+    <span class="hljs-keyword">let</span> states = [];
+    <span class="hljs-keyword">let</span> currentStep = <span class="hljs-number">0</span>;
+
+    <span class="hljs-comment">// ヘルパー: 木のディープコピー</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cloneTree</span>(<span class="hljs-params">node</span>) </span>{
+        <span class="hljs-keyword">if</span> (!node) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">return</span> { <span class="hljs-attr">val</span>: node.val, <span class="hljs-attr">left</span>: cloneTree(node.left), <span class="hljs-attr">right</span>: cloneTree(node.right) };
+    }
+
+    <span class="hljs-comment">// Inorder 逐次処理のシミュレーション</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generateInorderStates</span>(<span class="hljs-params">preorder, inorder</span>) </span>{
+        <span class="hljs-keyword">const</span> result = [];
+        <span class="hljs-keyword">const</span> priority = {};
+        preorder.forEach(<span class="hljs-function">(<span class="hljs-params">val, i</span>) =&gt;</span> priority[val] = i);
+        <span class="hljs-keyword">let</span> stack = [];
+        <span class="hljs-keyword">let</span> rootNode = <span class="hljs-literal">null</span>;
+
+        result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">"初期状態：待機所(Stack)は空です。"</span>, <span class="hljs-attr">tree</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">stack</span>: [], <span class="hljs-attr">hlPre</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">hlIn</span>: -<span class="hljs-number">1</span> });
+
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; inorder.length; i++) {
+            <span class="hljs-keyword">let</span> val = inorder[i];
+            <span class="hljs-keyword">let</span> node = { <span class="hljs-attr">val</span>: val, <span class="hljs-attr">left</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">right</span>: <span class="hljs-literal">null</span> };
+            
+            result.push({ 
+                <span class="hljs-attr">step</span>: <span class="hljs-string">`Inorderからノード [<span class="hljs-subst">${val}</span>] を取り出しました。ノードを作成します。`</span>, 
+                <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>] || node), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i 
+            });
+
+            <span class="hljs-keyword">while</span> (stack.length &gt; <span class="hljs-number">0</span> &amp;&amp; priority[stack[stack.length - <span class="hljs-number">1</span>].val] &gt; priority[val]) {
+                <span class="hljs-keyword">let</span> popped = stack.pop();
+                node.left = popped;
+                result.push({ 
+                    <span class="hljs-attr">step</span>: <span class="hljs-string">`[重要] スタックトップ [<span class="hljs-subst">${popped.val}</span>] は Preorder で [<span class="hljs-subst">${val}</span>] より後に出現します。\nつまり [<span class="hljs-subst">${popped.val}</span>] は [<span class="hljs-subst">${val}</span>] の左側子孫です。\nスタックから取り出し、[<span class="hljs-subst">${val}</span>] の左の子に結びつけます。`</span>, 
+                    <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>] || node), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i 
+                });
+            }
+
+            <span class="hljs-keyword">if</span> (stack.length &gt; <span class="hljs-number">0</span>) {
+                stack[stack.length - <span class="hljs-number">1</span>].right = node;
+                result.push({ 
+                    <span class="hljs-attr">step</span>: <span class="hljs-string">`スタックトップ [<span class="hljs-subst">${stack[stack.length-<span class="hljs-number">1</span>].val}</span>] の右の子（仮の右親からの連結）として [<span class="hljs-subst">${val}</span>] をセットします。`</span>, 
+                    <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>]), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i 
+                });
+            }
+
+            stack.push(node);
+            <span class="hljs-keyword">if</span> (!rootNode) rootNode = stack[<span class="hljs-number">0</span>]; <span class="hljs-comment">// 全体のルートは常にスタックの底</span>
+            result.push({ 
+                <span class="hljs-attr">step</span>: <span class="hljs-string">`ノード [<span class="hljs-subst">${val}</span>] を待機所 (Stack) に追加します。`</span>, 
+                <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>]), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i 
+            });
+        }
+        
+        result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`構築完了！ スタックの底にある [<span class="hljs-subst">${stack[<span class="hljs-number">0</span>].val}</span>] が木の根 (Root) です。`</span>, <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>]), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">hlIn</span>: -<span class="hljs-number">1</span> });
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-comment">// Preorder 逐次処理のシミュレーション</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generatePreorderStates</span>(<span class="hljs-params">preorder, inorder</span>) </span>{
+        <span class="hljs-keyword">const</span> result = [];
+        <span class="hljs-keyword">let</span> root = { <span class="hljs-attr">val</span>: preorder[<span class="hljs-number">0</span>], <span class="hljs-attr">left</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">right</span>: <span class="hljs-literal">null</span> };
+        <span class="hljs-keyword">let</span> stack = [root];
+        <span class="hljs-keyword">let</span> inIdx = <span class="hljs-number">0</span>;
+
+        result.push({ 
+            <span class="hljs-attr">step</span>: <span class="hljs-string">`初期状態：Preorderの先頭 [<span class="hljs-subst">${preorder[<span class="hljs-number">0</span>]}</span>] を Root として作成し、スタックに積みます。`</span>, 
+            <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">hlIn</span>: inIdx 
+        });
+
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>; i &lt; preorder.length; i++) {
+            <span class="hljs-keyword">let</span> val = preorder[i];
+            <span class="hljs-keyword">let</span> node = { <span class="hljs-attr">val</span>: val, <span class="hljs-attr">left</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">right</span>: <span class="hljs-literal">null</span> };
+
+            result.push({ 
+                <span class="hljs-attr">step</span>: <span class="hljs-string">`Preorderからノード [<span class="hljs-subst">${val}</span>] を取り出しました。`</span>, 
+                <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx 
+            });
+
+            <span class="hljs-keyword">if</span> (stack[stack.length - <span class="hljs-number">1</span>].val !== inorder[inIdx]) {
+                stack[stack.length - <span class="hljs-number">1</span>].left = node;
+                result.push({ 
+                    <span class="hljs-attr">step</span>: <span class="hljs-string">`スタックトップ [<span class="hljs-subst">${stack[stack.length-<span class="hljs-number">1</span>].val}</span>] は Inorderの現在の値 [<span class="hljs-subst">${inorder[inIdx]}</span>] と異なります。\nまだ左の探索が終わっていないため、[<span class="hljs-subst">${val}</span>] を左の子にします。`</span>, 
+                    <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx 
+                });
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">let</span> curr = <span class="hljs-literal">null</span>;
+                <span class="hljs-keyword">while</span> (stack.length &gt; <span class="hljs-number">0</span> &amp;&amp; stack[stack.length - <span class="hljs-number">1</span>].val === inorder[inIdx]) {
+                    curr = stack.pop();
+                    inIdx++;
+                    result.push({ 
+                        <span class="hljs-attr">step</span>: <span class="hljs-string">`スタックトップ [<span class="hljs-subst">${curr.val}</span>] が Inorder の値と一致しました。\n左側子孫をすべて処理し終えたためスタックから Pop します。(Inorderを進める)`</span>, 
+                        <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx - <span class="hljs-number">1</span> 
+                    });
+                }
+                curr.right = node;
+                result.push({ 
+                    <span class="hljs-attr">step</span>: <span class="hljs-string">`最後に Pop した [<span class="hljs-subst">${curr.val}</span>] の右の探索に入ります。右の子として [<span class="hljs-subst">${val}</span>] を結びつけます。`</span>, 
+                    <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx 
+                });
+            }
+            stack.push(node);
+            result.push({ 
+                <span class="hljs-attr">step</span>: <span class="hljs-string">`ノード [<span class="hljs-subst">${val}</span>] をスタックに積みます。`</span>, 
+                <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx 
+            });
+        }
+        
+        result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">"構築完了！"</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">hlIn</span>: -<span class="hljs-number">1</span> });
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-comment">// --- D3.js Tree Rendering ---</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">buildD3Hierarchy</span>(<span class="hljs-params">node</span>) </span>{
+        <span class="hljs-keyword">if</span> (!node) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">const</span> res = { <span class="hljs-attr">name</span>: node.val, <span class="hljs-attr">children</span>: [] };
+        <span class="hljs-keyword">if</span> (node.left || node.right) {
+            res.children.push(node.left ? buildD3Hierarchy(node.left) : { <span class="hljs-attr">name</span>: <span class="hljs-string">""</span>, <span class="hljs-attr">isDummy</span>: <span class="hljs-literal">true</span> });
+            res.children.push(node.right ? buildD3Hierarchy(node.right) : { <span class="hljs-attr">name</span>: <span class="hljs-string">""</span>, <span class="hljs-attr">isDummy</span>: <span class="hljs-literal">true</span> });
+        }
+        <span class="hljs-keyword">return</span> res;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">drawTree</span>(<span class="hljs-params">rootData</span>) </span>{
+        <span class="hljs-keyword">const</span> container = d3.select(<span class="hljs-string">"#treeContainer"</span>);
+        container.selectAll(<span class="hljs-string">"*"</span>).remove();
+        <span class="hljs-keyword">if</span> (!rootData) <span class="hljs-keyword">return</span>;
+
+        <span class="hljs-keyword">const</span> d3Data = buildD3Hierarchy(rootData);
+        <span class="hljs-keyword">const</span> width = container.node().getBoundingClientRect().width;
+        <span class="hljs-keyword">const</span> height = container.node().getBoundingClientRect().height;
+        <span class="hljs-keyword">const</span> margin = {<span class="hljs-attr">top</span>: <span class="hljs-number">40</span>, <span class="hljs-attr">right</span>: <span class="hljs-number">20</span>, <span class="hljs-attr">bottom</span>: <span class="hljs-number">40</span>, <span class="hljs-attr">left</span>: <span class="hljs-number">20</span>};
+
+        <span class="hljs-keyword">const</span> svg = container.append(<span class="hljs-string">"svg"</span>)
+            .attr(<span class="hljs-string">"width"</span>, width)
+            .attr(<span class="hljs-string">"height"</span>, height)
+            .append(<span class="hljs-string">"g"</span>)
+            .attr(<span class="hljs-string">"transform"</span>, <span class="hljs-string">`translate(0, <span class="hljs-subst">${margin.top}</span>)`</span>);
+
+        <span class="hljs-keyword">const</span> treeLayout = d3.tree().size([width - margin.left - margin.right, height - margin.top - margin.bottom]);
+        <span class="hljs-keyword">const</span> root = d3.hierarchy(d3Data);
+        treeLayout(root);
+
+        <span class="hljs-comment">// Links</span>
+        svg.selectAll(<span class="hljs-string">".link"</span>)
+            .data(root.links())
+            .enter().append(<span class="hljs-string">"path"</span>)
+            .attr(<span class="hljs-string">"class"</span>, <span class="hljs-string">"link"</span>)
+            .attr(<span class="hljs-string">"d"</span>, d3.linkVertical()
+                .x(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.x + margin.left)
+                .y(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.y)
+            )
+            .attr(<span class="hljs-string">"stroke"</span>, <span class="hljs-string">"#b0c4de"</span>)
+            .attr(<span class="hljs-string">"fill"</span>, <span class="hljs-string">"none"</span>)
+            .attr(<span class="hljs-string">"stroke-width"</span>, <span class="hljs-number">2</span>)
+            .style(<span class="hljs-string">"opacity"</span>, <span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.target.data.isDummy ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
+
+        <span class="hljs-comment">// Nodes</span>
+        <span class="hljs-keyword">const</span> node = svg.selectAll(<span class="hljs-string">".node"</span>)
+            .data(root.descendants())
+            .enter().append(<span class="hljs-string">"g"</span>)
+            .attr(<span class="hljs-string">"class"</span>, <span class="hljs-string">"node"</span>)
+            .attr(<span class="hljs-string">"transform"</span>, <span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> <span class="hljs-string">`translate(<span class="hljs-subst">${d.x + margin.left}</span>,<span class="hljs-subst">${d.y}</span>)`</span>)
+            .style(<span class="hljs-string">"opacity"</span>, <span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.data.isDummy ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
+
+        node.append(<span class="hljs-string">"circle"</span>)
+            .attr(<span class="hljs-string">"r"</span>, <span class="hljs-number">20</span>)
+            .attr(<span class="hljs-string">"fill"</span>, <span class="hljs-string">"#fff"</span>)
+            .attr(<span class="hljs-string">"stroke"</span>, <span class="hljs-string">"#4a90e2"</span>)
+            .attr(<span class="hljs-string">"stroke-width"</span>, <span class="hljs-number">3</span>);
+
+        node.append(<span class="hljs-string">"text"</span>)
+            .attr(<span class="hljs-string">"dy"</span>, <span class="hljs-string">".35em"</span>)
+            .attr(<span class="hljs-string">"text-anchor"</span>, <span class="hljs-string">"middle"</span>)
+            .text(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.data.name)
+            .style(<span class="hljs-string">"font-size"</span>, <span class="hljs-string">"14px"</span>)
+            .style(<span class="hljs-string">"font-weight"</span>, <span class="hljs-string">"bold"</span>)
+            .style(<span class="hljs-string">"fill"</span>, <span class="hljs-string">"#333"</span>);
+    }
+
+    <span class="hljs-comment">// --- UI Update Logic ---</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">renderArrayText</span>(<span class="hljs-params">containerId, arr, highlightIdx</span>) </span>{
+        <span class="hljs-keyword">const</span> container = <span class="hljs-built_in">document</span>.getElementById(containerId);
+        container.innerHTML = arr.map(<span class="hljs-function">(<span class="hljs-params">v, i</span>) =&gt;</span> {
+            <span class="hljs-keyword">if</span> (i === highlightIdx) <span class="hljs-keyword">return</span> <span class="hljs-string">`&lt;span class="highlight"&gt;<span class="hljs-subst">${v}</span>&lt;/span&gt;`</span>;
+            <span class="hljs-keyword">return</span> v;
+        }).join(<span class="hljs-string">", "</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">updateUI</span>() </span>{
+        <span class="hljs-keyword">const</span> state = states[currentStep];
+        
+        <span class="hljs-comment">// Update arrays</span>
+        renderArrayText(<span class="hljs-string">"preorderArr"</span>, preorderData, state.hlPre);
+        renderArrayText(<span class="hljs-string">"inorderArr"</span>, inorderData, state.hlIn);
+
+        <span class="hljs-comment">// Update stack</span>
+        <span class="hljs-keyword">const</span> stackHTML = state.stack.map(<span class="hljs-function"><span class="hljs-params">val</span> =&gt;</span> <span class="hljs-string">`&lt;div class="stack-item"&gt;<span class="hljs-subst">${val}</span>&lt;/div&gt;`</span>).join(<span class="hljs-string">""</span>);
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"stackDisplay"</span>).innerHTML = stackHTML || <span class="hljs-string">"&lt;span style='color:#999; line-height:40px;'&gt;空&lt;/span&gt;"</span>;
+
+        <span class="hljs-comment">// Update description</span>
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"descDisplay"</span>).innerText = state.step;
+
+        <span class="hljs-comment">// Update Tree</span>
+        drawTree(state.tree);
+
+        <span class="hljs-comment">// Update Buttons &amp; Counter</span>
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"stepCounter"</span>).innerText = <span class="hljs-string">`Step <span class="hljs-subst">${currentStep}</span> / <span class="hljs-subst">${states.length - <span class="hljs-number">1</span>}</span>`</span>;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnPrev"</span>).disabled = currentStep === <span class="hljs-number">0</span>;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnNext"</span>).disabled = currentStep === states.length - <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">changeAlgorithm</span>() </span>{
+        <span class="hljs-keyword">const</span> algo = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"algoSelect"</span>).value;
+        <span class="hljs-keyword">if</span> (algo === <span class="hljs-string">"inorder"</span>) {
+            states = generateInorderStates(preorderData, inorderData);
+        } <span class="hljs-keyword">else</span> {
+            states = generatePreorderStates(preorderData, inorderData);
+        }
+        currentStep = <span class="hljs-number">0</span>;
+        updateUI();
+    }
+
+    <span class="hljs-comment">// Event Listeners</span>
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"algoSelect"</span>).addEventListener(<span class="hljs-string">"change"</span>, changeAlgorithm);
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnPrev"</span>).addEventListener(<span class="hljs-string">"click"</span>, <span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-keyword">if</span> (currentStep &gt; <span class="hljs-number">0</span>) { currentStep--; updateUI(); }
+    });
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnNext"</span>).addEventListener(<span class="hljs-string">"click"</span>, <span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-keyword">if</span> (currentStep &lt; states.length - <span class="hljs-number">1</span>) { currentStep++; updateUI(); }
+    });
+
+    <span class="hljs-comment">// Window resize handling for D3</span>
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">"resize"</span>, updateUI);
+
+    <span class="hljs-comment">// Init</span>
+    changeAlgorithm();
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre><!----></div></div></div><!----><!----><!----></code-block><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----></response-element><h3 data-path-to-node="5">ビジュアライザのポイント</h3><ul data-path-to-node="6"><li><p data-path-to-node="6,0,0"><b data-path-to-node="6,0,0" data-index-in-node="0">待機所 (Stack) の可視化:</b> 議論の中で挙げられていた「親不明ノードの待機所」を画面左下に配置し、どのノードが積まれているかが一目でわかるようにしました。</p></li><li><p data-path-to-node="6,1,0"><b data-path-to-node="6,1,0" data-index-in-node="0">配列のハイライト:</b> 現在処理しているノードが <code data-path-to-node="6,1,0" data-index-in-node="23">preorder</code> と <code data-path-to-node="6,1,0" data-index-in-node="34">inorder</code> のどこに位置しているのかを連動してハイライトさせます。Inorder アプローチにおける「インデックスの優先度」の比較がイメージしやすくなります。</p></li><li><p data-path-to-node="6,2,0"><b data-path-to-node="6,2,0" data-index-in-node="0">ダミーノードの処理:</b> D3.js のレイアウトエンジンを使う際、片方しか子を持たないノードの描画が中央寄りになってしまうのを防ぐため、内部的に透明なダミーノードを挿入し、「右の子」と「左の子」の配置が常に正しくなるように調整しています。</p></li></ul><p data-path-to-node="7">Preorder 逐次処理（通常よく解説されるスタック解法）と Inorder 逐次処理の挙動を切り替えて比較してみると、同じ木を構築するのにもアプローチがまるで逆方向（左親を迎えにいくか、右の子を埋めにいくか）になっていることが明確にわかって非常に面白いです。ぜひブラウザ上で動かしてみてください。</p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container enable-2026q1-formatting-improvements" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-1" jslog="275422;track:impression,attention"><!----><!----><!----><!----><span class="user-query-bubble-with-background enable-2026q1-formatting-improvements"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated" dir="ltr"><span class="cdk-visually-hidden screen-reader-user-query-label">あなたのプロンプト</span><p class="query-text-line"> ありがとうございます。いいですね。配列の状態を、例えば左右を変えたときに、ツリーがどう変わるか？みたいなことがわかるように可視化したいです。逐次ロジックモードに追加して、配列変更したときにどうなるのかモードを追加してください。配列はドラッグドロップで変更できるとよいと思います。 <!----><!----></p><!----></div><!----></span></span><!----><!----><!----></div><!----><!----><!----></div><!----><!----><!----></user-query-content>
+あなたのプロンプト
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            Gemini の回答
+<div class="container"><message-content id="message-content-id-r_1a1d417c021d59a8"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color" id="model-response-message-contentr_1a1d417c021d59a8" aria-live="off" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">素晴らしいアイデアですね！配列の要素を入れ替えることで「構築される木がどう変化するか」をリアルタイムに確認できると、それぞれの配列が木構造においてどのような役割（Preorderは上下関係、Inorderは左右関係）を果たしているのかが直感的に理解できるようになります。</p><p data-path-to-node="1">ご要望の通り、既存の「逐次ロジックモード」に加えて、配列をドラッグ＆ドロップで直接編集できる**「配列変更モード（インタラクティブモード）」**を追加しました。</p><p data-path-to-node="2">以下のコードでHTMLファイルを上書きしてブラウザで開いてみてください。画面上部のタブでモードを切り替えられるようになっています。</p><response-element class="" ng-version="0.0.0-PLACEHOLDER"><!----><!----><!----><!----><!----><!----><code-block style=""><!----><!----><div class="code-block" jslog="223238;track:impression,attention;BardVeMetadataKey:[[&quot;r_1a1d417c021d59a8&quot;,&quot;c_0e9e68079933adfe&quot;,null,&quot;rc_3f61e4b3054a3a2f&quot;,null,null,&quot;ja&quot;,null,1,null,null,1,0]]" style="display: block;"><div class="code-block-decoration header-formatted gds-title-s" style=""><span>HTML</span><!----><!----></div><!----><div class="formatted-code-block-internal-container"><div class="animated-opacity"><pre><code role="text" data-test-id="code-content" class="code-container formatted"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span> <span class="hljs-attr">lang</span>=<span class="hljs-string">"ja"</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">charset</span>=<span class="hljs-string">"UTF-8"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">meta</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"viewport"</span> <span class="hljs-attr">content</span>=<span class="hljs-string">"width=device-width, initial-scale=1.0"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Tree Construction Visualizer (Interactive)<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"https://d3js.org/d3.v7.min.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+        <span class="hljs-selector-tag">body</span> { <span class="hljs-attribute">font-family</span>: -apple-system, BlinkMacSystemFont, <span class="hljs-string">"Segoe UI"</span>, Roboto, Helvetica, Arial, sans-serif; <span class="hljs-attribute">margin</span>: <span class="hljs-number">0</span>; <span class="hljs-attribute">padding</span>: <span class="hljs-number">20px</span>; <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#f7f9fc</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#333</span>; }
+        <span class="hljs-selector-tag">h1</span> { <span class="hljs-attribute">font-size</span>: <span class="hljs-number">24px</span>; <span class="hljs-attribute">text-align</span>: center; <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.container</span> { <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">flex-direction</span>: column; <span class="hljs-attribute">max-width</span>: <span class="hljs-number">1200px</span>; <span class="hljs-attribute">margin</span>: <span class="hljs-number">0</span> auto; gap: <span class="hljs-number">20px</span>; }
+        
+        <span class="hljs-comment">/* Tabs */</span>
+        <span class="hljs-selector-class">.tabs</span> { <span class="hljs-attribute">display</span>: flex; gap: <span class="hljs-number">10px</span>; <span class="hljs-attribute">margin-bottom</span>: -<span class="hljs-number">10px</span>; }
+        <span class="hljs-selector-class">.tab</span> { <span class="hljs-attribute">padding</span>: <span class="hljs-number">10px</span> <span class="hljs-number">20px</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#e0e6ed</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span> <span class="hljs-number">8px</span> <span class="hljs-number">0</span> <span class="hljs-number">0</span>; <span class="hljs-attribute">cursor</span>: pointer; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">border</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#ccc</span>; <span class="hljs-attribute">border-bottom</span>: none; <span class="hljs-attribute">color</span>: <span class="hljs-number">#666</span>; <span class="hljs-attribute">transition</span>: background <span class="hljs-number">0.2s</span>; }
+        <span class="hljs-selector-class">.tab</span><span class="hljs-selector-class">.active</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#4a90e2</span>; <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> -<span class="hljs-number">2px</span> <span class="hljs-number">5px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0.05</span>); }
+        <span class="hljs-selector-class">.tab</span><span class="hljs-selector-pseudo">:hover</span><span class="hljs-selector-pseudo">:not</span>(<span class="hljs-selector-class">.active</span>) { <span class="hljs-attribute">background</span>: <span class="hljs-number">#d0d7df</span>; }
+
+        <span class="hljs-selector-class">.controls</span> { <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">justify-content</span>: space-between; <span class="hljs-attribute">align-items</span>: center; <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">padding</span>: <span class="hljs-number">15px</span> <span class="hljs-number">20px</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">0</span> <span class="hljs-number">8px</span> <span class="hljs-number">8px</span> <span class="hljs-number">8px</span>; <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> <span class="hljs-number">2px</span> <span class="hljs-number">4px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0.1</span>); }
+        <span class="hljs-selector-class">.controls</span> select, <span class="hljs-selector-class">.controls</span> <span class="hljs-selector-tag">button</span> { <span class="hljs-attribute">padding</span>: <span class="hljs-number">8px</span> <span class="hljs-number">16px</span>; <span class="hljs-attribute">font-size</span>: <span class="hljs-number">14px</span>; <span class="hljs-attribute">border</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#ccc</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">4px</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">cursor</span>: pointer; }
+        <span class="hljs-selector-class">.controls</span> <span class="hljs-selector-tag">button</span><span class="hljs-selector-pseudo">:hover</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#eef2f5</span>; }
+        <span class="hljs-selector-class">.controls</span> <span class="hljs-selector-tag">button</span><span class="hljs-selector-pseudo">:disabled</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#f0f0f0</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#aaa</span>; <span class="hljs-attribute">cursor</span>: not-allowed; }
+        
+        <span class="hljs-selector-class">.main-panel</span> { <span class="hljs-attribute">display</span>: flex; gap: <span class="hljs-number">20px</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">600px</span>; }
+        <span class="hljs-selector-class">.left-panel</span> { <span class="hljs-attribute">flex</span>: <span class="hljs-number">1</span>; <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">flex-direction</span>: column; gap: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.right-panel</span> { <span class="hljs-attribute">flex</span>: <span class="hljs-number">2</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> <span class="hljs-number">2px</span> <span class="hljs-number">4px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0.1</span>); <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">flex-direction</span>: column; <span class="hljs-attribute">padding</span>: <span class="hljs-number">20px</span>; }
+        
+        <span class="hljs-selector-class">.box</span> { <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">box-shadow</span>: <span class="hljs-number">0</span> <span class="hljs-number">2px</span> <span class="hljs-number">4px</span> <span class="hljs-built_in">rgba</span>(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0.1</span>); <span class="hljs-attribute">padding</span>: <span class="hljs-number">20px</span>; }
+        <span class="hljs-selector-class">.box</span> <span class="hljs-selector-tag">h3</span> { <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">0</span>; <span class="hljs-attribute">font-size</span>: <span class="hljs-number">16px</span>; <span class="hljs-attribute">border-bottom</span>: <span class="hljs-number">1px</span> solid <span class="hljs-number">#eee</span>; <span class="hljs-attribute">padding-bottom</span>: <span class="hljs-number">10px</span>; }
+        
+        <span class="hljs-comment">/* Step Mode Styles */</span>
+        <span class="hljs-selector-class">.array-display</span> { <span class="hljs-attribute">font-family</span>: monospace; <span class="hljs-attribute">font-size</span>: <span class="hljs-number">16px</span>; <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">10px</span>; }
+        <span class="hljs-selector-class">.highlight</span> { <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#ffe066</span>; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">padding</span>: <span class="hljs-number">2px</span> <span class="hljs-number">4px</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">4px</span>; }
+        <span class="hljs-selector-class">.stack-container</span> { <span class="hljs-attribute">display</span>: flex; gap: <span class="hljs-number">10px</span>; <span class="hljs-attribute">flex-wrap</span>: wrap; }
+        <span class="hljs-selector-class">.stack-item</span> { <span class="hljs-attribute">width</span>: <span class="hljs-number">40px</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">40px</span>; <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> solid <span class="hljs-number">#4a90e2</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">align-items</span>: center; <span class="hljs-attribute">justify-content</span>: center; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">background</span>: <span class="hljs-number">#eef5ff</span>; <span class="hljs-attribute">color</span>: <span class="hljs-number">#2c3e50</span>; }
+        <span class="hljs-selector-class">.description</span> { <span class="hljs-attribute">font-size</span>: <span class="hljs-number">16px</span>; <span class="hljs-attribute">line-height</span>: <span class="hljs-number">1.5</span>; <span class="hljs-attribute">min-height</span>: <span class="hljs-number">80px</span>; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">color</span>: <span class="hljs-number">#2c3e50</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#e8f4fd</span>; <span class="hljs-attribute">padding</span>: <span class="hljs-number">15px</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">border-left</span>: <span class="hljs-number">4px</span> solid <span class="hljs-number">#4a90e2</span>; }
+        
+        <span class="hljs-comment">/* Interactive Mode Styles */</span>
+        <span class="hljs-selector-class">.dnd-area</span> { <span class="hljs-attribute">display</span>: none; <span class="hljs-attribute">flex-direction</span>: column; gap: <span class="hljs-number">20px</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">100%</span>; }
+        <span class="hljs-selector-class">.dnd-row</span> { <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">align-items</span>: center; gap: <span class="hljs-number">10px</span>; }
+        <span class="hljs-selector-class">.dnd-label</span> { <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">width</span>: <span class="hljs-number">80px</span>; }
+        <span class="hljs-selector-class">.dnd-list</span> { <span class="hljs-attribute">display</span>: flex; gap: <span class="hljs-number">5px</span>; <span class="hljs-attribute">padding</span>: <span class="hljs-number">10px</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#f0f4f8</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">min-height</span>: <span class="hljs-number">40px</span>; <span class="hljs-attribute">flex-wrap</span>: wrap; }
+        <span class="hljs-selector-class">.dnd-item</span> { <span class="hljs-attribute">width</span>: <span class="hljs-number">40px</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">40px</span>; <span class="hljs-attribute">border</span>: <span class="hljs-number">2px</span> solid <span class="hljs-number">#ccc</span>; <span class="hljs-attribute">border-radius</span>: <span class="hljs-number">8px</span>; <span class="hljs-attribute">display</span>: flex; <span class="hljs-attribute">align-items</span>: center; <span class="hljs-attribute">justify-content</span>: center; <span class="hljs-attribute">font-weight</span>: bold; <span class="hljs-attribute">background</span>: <span class="hljs-number">#fff</span>; <span class="hljs-attribute">cursor</span>: grab; user-select: none; <span class="hljs-attribute">transition</span>: transform <span class="hljs-number">0.1s</span>; }
+        <span class="hljs-selector-class">.dnd-item</span><span class="hljs-selector-pseudo">:active</span> { <span class="hljs-attribute">cursor</span>: grabbing; <span class="hljs-attribute">transform</span>: <span class="hljs-built_in">scale</span>(<span class="hljs-number">1.05</span>); }
+        <span class="hljs-selector-class">.dnd-item</span><span class="hljs-selector-class">.dragging</span> { <span class="hljs-attribute">opacity</span>: <span class="hljs-number">0.5</span>; <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#4a90e2</span>; }
+        <span class="hljs-selector-class">.dnd-item</span><span class="hljs-selector-class">.drag-over</span> { <span class="hljs-attribute">border-style</span>: dashed; <span class="hljs-attribute">border-color</span>: <span class="hljs-number">#e24a4a</span>; <span class="hljs-attribute">background</span>: <span class="hljs-number">#ffebeb</span>; }
+
+        svg { <span class="hljs-attribute">flex</span>: <span class="hljs-number">1</span>; <span class="hljs-attribute">width</span>: <span class="hljs-number">100%</span>; <span class="hljs-attribute">height</span>: <span class="hljs-number">100%</span>; }
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>二分木構築 ビジュアライザ<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"container"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"tabs"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"tab active"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"tabStep"</span>&gt;</span>逐次ロジックモード<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"tab"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"tabInteractive"</span>&gt;</span>配列変更モード (Drag &amp; Drop)<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"controls"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"algoSelect"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">strong</span>&gt;</span>ロジック選択:<span class="hljs-tag">&lt;/<span class="hljs-name">strong</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"algoSelect"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"inorder"</span>&gt;</span>Inorder 逐次処理バージョン<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"preorder"</span>&gt;</span>Preorder 逐次処理バージョン<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"stepControls"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btnPrev"</span>&gt;</span>← 前のステップ<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"stepCounter"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"margin: 0 15px; font-weight: bold;"</span>&gt;</span>Step 0 / 0<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btnNext"</span>&gt;</span>次のステップ →<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"interactiveMsg"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display: none; color: #666; font-weight: bold;"</span>&gt;</span>
+                ※配列の要素をドラッグ＆ドロップして並び替えてください
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"main-panel"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"left-panel"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"stepView"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"display: flex; flex-direction: column; gap: 20px; height: 100%;"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"box"</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>配列の状態<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"array-display"</span>&gt;</span>Preorder: <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"preorderArr"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"array-display"</span>&gt;</span>Inorder : <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"inorderArr"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"box"</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>待機所 (Stack)<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"stack-container"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"stackDisplay"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"box"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"flex: 1;"</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>アルゴリズムの解説<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"descDisplay"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"description"</span>&gt;</span>初期状態<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"interactiveView"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"box dnd-area"</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>配列の直接編集<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"font-size: 14px; color: #666; margin-top: 0;"</span>&gt;</span>要素をドラッグ＆ドロップで入れ替えると、右側の木構造が即座に再構築されます。不正な木になる配列の組み合わせも実験可能です。<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"dnd-row"</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"dnd-label"</span>&gt;</span>Preorder<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"dnd-list"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"dndPreorder"</span> <span class="hljs-attr">data-type</span>=<span class="hljs-string">"preorder"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"dnd-row"</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"dnd-label"</span>&gt;</span>Inorder<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"dnd-list"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"dndInorder"</span> <span class="hljs-attr">data-type</span>=<span class="hljs-string">"inorder"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"right-panel"</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"margin-top: 0; margin-bottom: 10px;"</span>&gt;</span>構築された木構造<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"treeContainer"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"flex: 1;"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript">
+    <span class="hljs-comment">// Global State</span>
+    <span class="hljs-keyword">let</span> preorderData = [<span class="hljs-number">3</span>, <span class="hljs-number">9</span>, <span class="hljs-number">20</span>, <span class="hljs-number">15</span>, <span class="hljs-number">7</span>];
+    <span class="hljs-keyword">let</span> inorderData = [<span class="hljs-number">9</span>, <span class="hljs-number">3</span>, <span class="hljs-number">15</span>, <span class="hljs-number">20</span>, <span class="hljs-number">7</span>];
+    <span class="hljs-keyword">let</span> states = [];
+    <span class="hljs-keyword">let</span> currentStep = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">let</span> currentMode = <span class="hljs-string">'step'</span>; <span class="hljs-comment">// 'step' or 'interactive'</span>
+
+    <span class="hljs-comment">// ヘルパー: 木のディープコピー</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cloneTree</span>(<span class="hljs-params">node</span>) </span>{
+        <span class="hljs-keyword">if</span> (!node) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">return</span> { <span class="hljs-attr">val</span>: node.val, <span class="hljs-attr">left</span>: cloneTree(node.left), <span class="hljs-attr">right</span>: cloneTree(node.right) };
+    }
+
+    <span class="hljs-comment">// --- ロジックシミュレーション ---</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generateInorderStates</span>(<span class="hljs-params">preorder, inorder</span>) </span>{
+        <span class="hljs-keyword">const</span> result = [];
+        <span class="hljs-keyword">const</span> priority = {};
+        preorder.forEach(<span class="hljs-function">(<span class="hljs-params">val, i</span>) =&gt;</span> priority[val] = i);
+        <span class="hljs-keyword">let</span> stack = [];
+        <span class="hljs-keyword">let</span> rootNode = <span class="hljs-literal">null</span>;
+
+        result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">"初期状態：待機所(Stack)は空です。"</span>, <span class="hljs-attr">tree</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">stack</span>: [], <span class="hljs-attr">hlPre</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">hlIn</span>: -<span class="hljs-number">1</span> });
+
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; inorder.length; i++) {
+            <span class="hljs-keyword">let</span> val = inorder[i];
+            <span class="hljs-keyword">let</span> node = { <span class="hljs-attr">val</span>: val, <span class="hljs-attr">left</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">right</span>: <span class="hljs-literal">null</span> };
+            
+            result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`Inorderから [<span class="hljs-subst">${val}</span>] を取り出し、ノードを作成。`</span>, <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>] || node), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i });
+
+            <span class="hljs-keyword">while</span> (stack.length &gt; <span class="hljs-number">0</span> &amp;&amp; priority[stack[stack.length - <span class="hljs-number">1</span>].val] &gt; (priority[val] ?? <span class="hljs-literal">Infinity</span>)) {
+                <span class="hljs-keyword">let</span> popped = stack.pop();
+                node.left = popped;
+                result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`[<span class="hljs-subst">${popped.val}</span>] はPreorderで [<span class="hljs-subst">${val}</span>] より後に出現するため、[<span class="hljs-subst">${val}</span>] の左の子にします。`</span>, <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>] || node), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i });
+            }
+
+            <span class="hljs-keyword">if</span> (stack.length &gt; <span class="hljs-number">0</span>) {
+                stack[stack.length - <span class="hljs-number">1</span>].right = node;
+                result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`スタックトップ [<span class="hljs-subst">${stack[stack.length-<span class="hljs-number">1</span>].val}</span>] の仮の右の子として [<span class="hljs-subst">${val}</span>] をセット。`</span>, <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>]), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i });
+            }
+
+            stack.push(node);
+            <span class="hljs-keyword">if</span> (!rootNode) rootNode = stack[<span class="hljs-number">0</span>];
+            result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`ノード [<span class="hljs-subst">${val}</span>] を待機所に積みます。`</span>, <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>]), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: priority[val], <span class="hljs-attr">hlIn</span>: i });
+        }
+        
+        result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`構築完了！ スタックの底の [<span class="hljs-subst">${stack[<span class="hljs-number">0</span>]?.val}</span>] がRootです。`</span>, <span class="hljs-attr">tree</span>: cloneTree(stack[<span class="hljs-number">0</span>]), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">hlIn</span>: -<span class="hljs-number">1</span> });
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generatePreorderStates</span>(<span class="hljs-params">preorder, inorder</span>) </span>{
+        <span class="hljs-keyword">const</span> result = [];
+        <span class="hljs-keyword">if</span> (preorder.length === <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> [{ <span class="hljs-attr">step</span>: <span class="hljs-string">"空"</span>, <span class="hljs-attr">tree</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">stack</span>: [], <span class="hljs-attr">hlPre</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">hlIn</span>: -<span class="hljs-number">1</span> }];
+        
+        <span class="hljs-keyword">let</span> root = { <span class="hljs-attr">val</span>: preorder[<span class="hljs-number">0</span>], <span class="hljs-attr">left</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">right</span>: <span class="hljs-literal">null</span> };
+        <span class="hljs-keyword">let</span> stack = [root];
+        <span class="hljs-keyword">let</span> inIdx = <span class="hljs-number">0</span>;
+
+        result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`Preorderの先頭 [<span class="hljs-subst">${preorder[<span class="hljs-number">0</span>]}</span>] を Root として作成。`</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">hlIn</span>: inIdx });
+
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>; i &lt; preorder.length; i++) {
+            <span class="hljs-keyword">let</span> val = preorder[i];
+            <span class="hljs-keyword">let</span> node = { <span class="hljs-attr">val</span>: val, <span class="hljs-attr">left</span>: <span class="hljs-literal">null</span>, <span class="hljs-attr">right</span>: <span class="hljs-literal">null</span> };
+
+            result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`Preorderから [<span class="hljs-subst">${val}</span>] を取り出しました。`</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx });
+
+            <span class="hljs-keyword">if</span> (stack.length &gt; <span class="hljs-number">0</span> &amp;&amp; stack[stack.length - <span class="hljs-number">1</span>].val !== inorder[inIdx]) {
+                stack[stack.length - <span class="hljs-number">1</span>].left = node;
+                result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`Inorderの現在値と異なるため、[<span class="hljs-subst">${val}</span>] を左の子にします。`</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx });
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">let</span> curr = <span class="hljs-literal">null</span>;
+                <span class="hljs-keyword">while</span> (stack.length &gt; <span class="hljs-number">0</span> &amp;&amp; stack[stack.length - <span class="hljs-number">1</span>].val === inorder[inIdx]) {
+                    curr = stack.pop();
+                    inIdx++;
+                    result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`[<span class="hljs-subst">${curr.val}</span>] の左側探索完了。PopしてInorderを進めます。`</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx - <span class="hljs-number">1</span> });
+                }
+                <span class="hljs-keyword">if</span> (curr) curr.right = node;
+                result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`最後にPopしたノードの右の子として [<span class="hljs-subst">${val}</span>] を結びつけます。`</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx });
+            }
+            stack.push(node);
+            result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">`ノード [<span class="hljs-subst">${val}</span>] をスタックに積みます。`</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: i, <span class="hljs-attr">hlIn</span>: inIdx });
+        }
+        
+        result.push({ <span class="hljs-attr">step</span>: <span class="hljs-string">"構築完了！"</span>, <span class="hljs-attr">tree</span>: cloneTree(root), <span class="hljs-attr">stack</span>: stack.map(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> n.val), <span class="hljs-attr">hlPre</span>: -<span class="hljs-number">1</span>, <span class="hljs-attr">hlIn</span>: -<span class="hljs-number">1</span> });
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-comment">// --- D3.js Tree Rendering ---</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">buildD3Hierarchy</span>(<span class="hljs-params">node</span>) </span>{
+        <span class="hljs-keyword">if</span> (!node) <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">const</span> res = { <span class="hljs-attr">name</span>: node.val, <span class="hljs-attr">children</span>: [] };
+        <span class="hljs-keyword">if</span> (node.left || node.right) {
+            res.children.push(node.left ? buildD3Hierarchy(node.left) : { <span class="hljs-attr">name</span>: <span class="hljs-string">""</span>, <span class="hljs-attr">isDummy</span>: <span class="hljs-literal">true</span> });
+            res.children.push(node.right ? buildD3Hierarchy(node.right) : { <span class="hljs-attr">name</span>: <span class="hljs-string">""</span>, <span class="hljs-attr">isDummy</span>: <span class="hljs-literal">true</span> });
+        }
+        <span class="hljs-keyword">return</span> res;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">drawTree</span>(<span class="hljs-params">rootData</span>) </span>{
+        <span class="hljs-keyword">const</span> container = d3.select(<span class="hljs-string">"#treeContainer"</span>);
+        container.selectAll(<span class="hljs-string">"*"</span>).remove();
+        <span class="hljs-keyword">if</span> (!rootData) {
+            container.append(<span class="hljs-string">"div"</span>).style(<span class="hljs-string">"color"</span>, <span class="hljs-string">"#999"</span>).style(<span class="hljs-string">"text-align"</span>, <span class="hljs-string">"center"</span>).style(<span class="hljs-string">"margin-top"</span>, <span class="hljs-string">"50px"</span>).text(<span class="hljs-string">"木が空、または不正な配列により構築できません"</span>);
+            <span class="hljs-keyword">return</span>;
+        }
+
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-keyword">const</span> d3Data = buildD3Hierarchy(rootData);
+            <span class="hljs-keyword">const</span> width = container.node().getBoundingClientRect().width;
+            <span class="hljs-keyword">const</span> height = container.node().getBoundingClientRect().height;
+            <span class="hljs-keyword">const</span> margin = {<span class="hljs-attr">top</span>: <span class="hljs-number">40</span>, <span class="hljs-attr">right</span>: <span class="hljs-number">20</span>, <span class="hljs-attr">bottom</span>: <span class="hljs-number">40</span>, <span class="hljs-attr">left</span>: <span class="hljs-number">20</span>};
+
+            <span class="hljs-keyword">const</span> svg = container.append(<span class="hljs-string">"svg"</span>).attr(<span class="hljs-string">"width"</span>, width).attr(<span class="hljs-string">"height"</span>, height).append(<span class="hljs-string">"g"</span>).attr(<span class="hljs-string">"transform"</span>, <span class="hljs-string">`translate(0, <span class="hljs-subst">${margin.top}</span>)`</span>);
+            <span class="hljs-keyword">const</span> treeLayout = d3.tree().size([width - margin.left - margin.right, height - margin.top - margin.bottom]);
+            <span class="hljs-keyword">const</span> root = d3.hierarchy(d3Data);
+            treeLayout(root);
+
+            svg.selectAll(<span class="hljs-string">".link"</span>).data(root.links()).enter().append(<span class="hljs-string">"path"</span>).attr(<span class="hljs-string">"class"</span>, <span class="hljs-string">"link"</span>)
+                .attr(<span class="hljs-string">"d"</span>, d3.linkVertical().x(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.x + margin.left).y(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.y))
+                .attr(<span class="hljs-string">"stroke"</span>, <span class="hljs-string">"#b0c4de"</span>).attr(<span class="hljs-string">"fill"</span>, <span class="hljs-string">"none"</span>).attr(<span class="hljs-string">"stroke-width"</span>, <span class="hljs-number">2</span>)
+                .style(<span class="hljs-string">"opacity"</span>, <span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.target.data.isDummy ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
+
+            <span class="hljs-keyword">const</span> node = svg.selectAll(<span class="hljs-string">".node"</span>).data(root.descendants()).enter().append(<span class="hljs-string">"g"</span>).attr(<span class="hljs-string">"class"</span>, <span class="hljs-string">"node"</span>)
+                .attr(<span class="hljs-string">"transform"</span>, <span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> <span class="hljs-string">`translate(<span class="hljs-subst">${d.x + margin.left}</span>,<span class="hljs-subst">${d.y}</span>)`</span>)
+                .style(<span class="hljs-string">"opacity"</span>, <span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.data.isDummy ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
+
+            node.append(<span class="hljs-string">"circle"</span>).attr(<span class="hljs-string">"r"</span>, <span class="hljs-number">20</span>).attr(<span class="hljs-string">"fill"</span>, <span class="hljs-string">"#fff"</span>).attr(<span class="hljs-string">"stroke"</span>, <span class="hljs-string">"#4a90e2"</span>).attr(<span class="hljs-string">"stroke-width"</span>, <span class="hljs-number">3</span>);
+            node.append(<span class="hljs-string">"text"</span>).attr(<span class="hljs-string">"dy"</span>, <span class="hljs-string">".35em"</span>).attr(<span class="hljs-string">"text-anchor"</span>, <span class="hljs-string">"middle"</span>).text(<span class="hljs-function"><span class="hljs-params">d</span> =&gt;</span> d.data.name)
+                .style(<span class="hljs-string">"font-size"</span>, <span class="hljs-string">"14px"</span>).style(<span class="hljs-string">"font-weight"</span>, <span class="hljs-string">"bold"</span>).style(<span class="hljs-string">"fill"</span>, <span class="hljs-string">"#333"</span>);
+        } <span class="hljs-keyword">catch</span> (e) {
+             container.append(<span class="hljs-string">"div"</span>).style(<span class="hljs-string">"color"</span>, <span class="hljs-string">"red"</span>).style(<span class="hljs-string">"text-align"</span>, <span class="hljs-string">"center"</span>).style(<span class="hljs-string">"margin-top"</span>, <span class="hljs-string">"50px"</span>).text(<span class="hljs-string">"配列の組み合わせにより木が破綻しました (閉路などの発生)"</span>);
+        }
+    }
+
+    <span class="hljs-comment">// --- Step Mode UI ---</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">renderArrayText</span>(<span class="hljs-params">containerId, arr, highlightIdx</span>) </span>{
+        <span class="hljs-built_in">document</span>.getElementById(containerId).innerHTML = arr.map(<span class="hljs-function">(<span class="hljs-params">v, i</span>) =&gt;</span> i === highlightIdx ? <span class="hljs-string">`&lt;span class="highlight"&gt;<span class="hljs-subst">${v}</span>&lt;/span&gt;`</span> : v).join(<span class="hljs-string">", "</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">updateStepUI</span>() </span>{
+        <span class="hljs-keyword">if</span> (states.length === <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span>;
+        <span class="hljs-keyword">const</span> state = states[currentStep];
+        renderArrayText(<span class="hljs-string">"preorderArr"</span>, preorderData, state.hlPre);
+        renderArrayText(<span class="hljs-string">"inorderArr"</span>, inorderData, state.hlIn);
+        
+        <span class="hljs-keyword">const</span> stackHTML = state.stack.map(<span class="hljs-function"><span class="hljs-params">val</span> =&gt;</span> <span class="hljs-string">`&lt;div class="stack-item"&gt;<span class="hljs-subst">${val}</span>&lt;/div&gt;`</span>).join(<span class="hljs-string">""</span>);
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"stackDisplay"</span>).innerHTML = stackHTML || <span class="hljs-string">"&lt;span style='color:#999; line-height:40px;'&gt;空&lt;/span&gt;"</span>;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"descDisplay"</span>).innerText = state.step;
+        
+        drawTree(state.tree);
+
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"stepCounter"</span>).innerText = <span class="hljs-string">`Step <span class="hljs-subst">${currentStep}</span> / <span class="hljs-subst">${states.length - <span class="hljs-number">1</span>}</span>`</span>;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnPrev"</span>).disabled = currentStep === <span class="hljs-number">0</span>;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnNext"</span>).disabled = currentStep === states.length - <span class="hljs-number">1</span>;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generateAndResetSteps</span>() </span>{
+        <span class="hljs-keyword">const</span> algo = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"algoSelect"</span>).value;
+        states = algo === <span class="hljs-string">"inorder"</span> ? generateInorderStates(preorderData, inorderData) : generatePreorderStates(preorderData, inorderData);
+        currentStep = <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">if</span> (currentMode === <span class="hljs-string">'step'</span>) updateStepUI();
+    }
+
+    <span class="hljs-comment">// --- Interactive Mode UI &amp; Drag/Drop ---</span>
+    <span class="hljs-keyword">let</span> draggedItem = <span class="hljs-literal">null</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">renderInteractiveArrays</span>() </span>{
+        <span class="hljs-keyword">const</span> renderList = <span class="hljs-function">(<span class="hljs-params">id, arr, type</span>) =&gt;</span> {
+            <span class="hljs-keyword">const</span> container = <span class="hljs-built_in">document</span>.getElementById(id);
+            container.innerHTML = <span class="hljs-string">""</span>;
+            arr.forEach(<span class="hljs-function">(<span class="hljs-params">val, i</span>) =&gt;</span> {
+                <span class="hljs-keyword">const</span> el = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">"div"</span>);
+                el.className = <span class="hljs-string">"dnd-item"</span>;
+                el.draggable = <span class="hljs-literal">true</span>;
+                el.innerText = val;
+                el.dataset.index = i;
+                el.dataset.type = type;
+                
+                el.addEventListener(<span class="hljs-string">"dragstart"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">e</span>) </span>{
+                    draggedItem = <span class="hljs-built_in">this</span>;
+                    <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">this</span>.classList.add(<span class="hljs-string">"dragging"</span>), <span class="hljs-number">0</span>);
+                });
+                
+                el.addEventListener(<span class="hljs-string">"dragend"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>() </span>{
+                    <span class="hljs-built_in">this</span>.classList.remove(<span class="hljs-string">"dragging"</span>);
+                    <span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">'.dnd-item'</span>).forEach(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> item.classList.remove(<span class="hljs-string">"drag-over"</span>));
+                    draggedItem = <span class="hljs-literal">null</span>;
+                });
+
+                el.addEventListener(<span class="hljs-string">"dragover"</span>, <span class="hljs-function"><span class="hljs-params">e</span> =&gt;</span> e.preventDefault());
+                
+                el.addEventListener(<span class="hljs-string">"dragenter"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">e</span>) </span>{
+                    e.preventDefault();
+                    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">this</span> !== draggedItem &amp;&amp; <span class="hljs-built_in">this</span>.dataset.type === draggedItem.dataset.type) {
+                        <span class="hljs-built_in">this</span>.classList.add(<span class="hljs-string">"drag-over"</span>);
+                    }
+                });
+                
+                el.addEventListener(<span class="hljs-string">"dragleave"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>() </span>{ <span class="hljs-built_in">this</span>.classList.remove(<span class="hljs-string">"drag-over"</span>); });
+                
+                el.addEventListener(<span class="hljs-string">"drop"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">e</span>) </span>{
+                    e.stopPropagation();
+                    <span class="hljs-built_in">this</span>.classList.remove(<span class="hljs-string">"drag-over"</span>);
+                    <span class="hljs-keyword">if</span> (draggedItem &amp;&amp; <span class="hljs-built_in">this</span> !== draggedItem &amp;&amp; <span class="hljs-built_in">this</span>.dataset.type === draggedItem.dataset.type) {
+                        <span class="hljs-keyword">const</span> type = <span class="hljs-built_in">this</span>.dataset.type;
+                        <span class="hljs-keyword">const</span> arrRef = type === <span class="hljs-string">'preorder'</span> ? preorderData : inorderData;
+                        <span class="hljs-keyword">const</span> fromIdx = <span class="hljs-built_in">parseInt</span>(draggedItem.dataset.index);
+                        <span class="hljs-keyword">const</span> toIdx = <span class="hljs-built_in">parseInt</span>(<span class="hljs-built_in">this</span>.dataset.index);
+                        
+                        <span class="hljs-comment">// 要素を入れ替える（挿入してずらす）</span>
+                        <span class="hljs-keyword">const</span> [moved] = arrRef.splice(fromIdx, <span class="hljs-number">1</span>);
+                        arrRef.splice(toIdx, <span class="hljs-number">0</span>, moved);
+                        
+                        renderInteractiveArrays(); <span class="hljs-comment">// 再描画</span>
+                        updateInteractiveTree();   <span class="hljs-comment">// 木を即時再構築</span>
+                    }
+                });
+                container.appendChild(el);
+            });
+        };
+
+        renderList(<span class="hljs-string">"dndPreorder"</span>, preorderData, <span class="hljs-string">"preorder"</span>);
+        renderList(<span class="hljs-string">"dndInorder"</span>, inorderData, <span class="hljs-string">"inorder"</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">updateInteractiveTree</span>() </span>{
+        <span class="hljs-keyword">const</span> algo = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"algoSelect"</span>).value;
+        <span class="hljs-keyword">const</span> tempStates = algo === <span class="hljs-string">"inorder"</span> ? generateInorderStates(preorderData, inorderData) : generatePreorderStates(preorderData, inorderData);
+        <span class="hljs-keyword">const</span> finalState = tempStates[tempStates.length - <span class="hljs-number">1</span>];
+        drawTree(finalState.tree);
+    }
+
+    <span class="hljs-comment">// --- Mode Switching ---</span>
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">switchMode</span>(<span class="hljs-params">mode</span>) </span>{
+        currentMode = mode;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"tabStep"</span>).classList.toggle(<span class="hljs-string">"active"</span>, mode === <span class="hljs-string">"step"</span>);
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"tabInteractive"</span>).classList.toggle(<span class="hljs-string">"active"</span>, mode === <span class="hljs-string">"interactive"</span>);
+        
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"stepView"</span>).style.display = mode === <span class="hljs-string">"step"</span> ? <span class="hljs-string">"flex"</span> : <span class="hljs-string">"none"</span>;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"stepControls"</span>).style.display = mode === <span class="hljs-string">"step"</span> ? <span class="hljs-string">"block"</span> : <span class="hljs-string">"none"</span>;
+        
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"interactiveView"</span>).style.display = mode === <span class="hljs-string">"interactive"</span> ? <span class="hljs-string">"flex"</span> : <span class="hljs-string">"none"</span>;
+        <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"interactiveMsg"</span>).style.display = mode === <span class="hljs-string">"interactive"</span> ? <span class="hljs-string">"block"</span> : <span class="hljs-string">"none"</span>;
+
+        <span class="hljs-keyword">if</span> (mode === <span class="hljs-string">"step"</span>) {
+            generateAndResetSteps();
+        } <span class="hljs-keyword">else</span> {
+            renderInteractiveArrays();
+            updateInteractiveTree();
+        }
+    }
+
+    <span class="hljs-comment">// Event Listeners</span>
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"algoSelect"</span>).addEventListener(<span class="hljs-string">"change"</span>, <span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-keyword">if</span> (currentMode === <span class="hljs-string">'step'</span>) generateAndResetSteps();
+        <span class="hljs-keyword">else</span> updateInteractiveTree();
+    });
+    
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnPrev"</span>).addEventListener(<span class="hljs-string">"click"</span>, <span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-keyword">if</span> (currentStep &gt; <span class="hljs-number">0</span>) { currentStep--; updateStepUI(); }
+    });
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"btnNext"</span>).addEventListener(<span class="hljs-string">"click"</span>, <span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-keyword">if</span> (currentStep &lt; states.length - <span class="hljs-number">1</span>) { currentStep++; updateStepUI(); }
+    });
+
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"tabStep"</span>).addEventListener(<span class="hljs-string">"click"</span>, <span class="hljs-function">() =&gt;</span> switchMode(<span class="hljs-string">"step"</span>));
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"tabInteractive"</span>).addEventListener(<span class="hljs-string">"click"</span>, <span class="hljs-function">() =&gt;</span> switchMode(<span class="hljs-string">"interactive"</span>));
+
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">"resize"</span>, <span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-keyword">if</span> (currentMode === <span class="hljs-string">'step'</span>) updateStepUI();
+        <span class="hljs-keyword">else</span> updateInteractiveTree();
+    });
+
+    <span class="hljs-comment">// Init</span>
+    generateAndResetSteps();
+
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre><!----></div></div></div><!----><!----><!----></code-block><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----></response-element><h3 data-path-to-node="4">配列変更モードのポイント</h3><ul data-path-to-node="5"><li><p data-path-to-node="5,0,0"><b data-path-to-node="5,0,0" data-index-in-node="0">タブ切り替え機能:</b> 画面上部にタブを設置し、「逐次ロジックモード（既存機能）」と「配列変更モード（Drag &amp; Drop）」をシームレスに行き来できるようにしました。</p></li><li><p data-path-to-node="5,1,0"><b data-path-to-node="5,1,0" data-index-in-node="0">Drag &amp; Drop での即時反映:</b> 「配列変更モード」では、四角いブロックとして表示された配列の要素をつまんで順番を入れ替えることができます。ドロップした瞬間に、現在選択されているロジック（Inorder/Preorderベース）を用いて木が再計算・再描画されます。</p></li><li><p data-path-to-node="5,2,0"><b data-path-to-node="5,2,0" data-index-in-node="0">データの共有:</b> インタラクティブモードで配列を無茶苦茶にいじった後、「逐次ロジックモード」タブに戻ると、<b data-path-to-node="5,2,0" data-index-in-node="52">その無茶苦茶な配列のままステップ実行を観察することができます。</b> 「なぜこの配列だと木がこんな崩れた形になるのか？」をスタックの動きから追跡できるため、アルゴリズムの堅牢性や制約に対する理解がさらに深まります。</p></li><li><p data-path-to-node="5,3,0"><b data-path-to-node="5,3,0" data-index-in-node="0">エラーハンドリング:</b> 理論上ありえない順番に配列を並び替えると、木が断裂したり無限ループに近い状態になる（Preorderベースの場合など）ことがあります。そのような場合でも描画がクラッシュしないよう、エラー捕捉の仕組みを入れています。</p></li></ul><p data-path-to-node="6">Inorderの「3」と「9」を入れ替えてみたり、Preorderの順番をわざと逆にしてみたりすると、左側子孫と右側子孫の評価がどう狂うのかが視覚的にわかって非常に面白いです！</p></div></message-content><!----></div>
+          </div>
+        </section>
+      
+
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container enable-2026q1-formatting-improvements" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><!----><div class="query-content" id="user-query-content-2" jslog="275422;track:impression,attention"><!----><!----><!----><!----><span class="user-query-bubble-with-background enable-2026q1-formatting-improvements"><!----><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated" dir="ltr"><span class="cdk-visually-hidden screen-reader-user-query-label">あなたのプロンプト</span><p class="query-text-line"> 面白いですね。この事実はRSK対応となにか関係はありますか？ <!----><!----></p><!----></div><!----></span></span><!----><!----><!----></div><!----><!----><!----></div><!----><!----><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            Gemini の回答
+<div class="container"><message-content id="message-content-id-r_eba8cc8ee5469b48"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color" id="model-response-message-contentr_eba8cc8ee5469b48" aria-live="polite" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">非常に鋭い洞察ですね！結論から言うと、今回ビジュアライズした <code data-path-to-node="0" data-index-in-node="31">inorder</code> / <code data-path-to-node="0" data-index-in-node="41">preorder</code> からの二分木構築プロセスは、<b data-path-to-node="0" data-index-in-node="64">RSK対応（Robinson-Schensted-Knuth correspondence）と「数学的な双子」とも言える非常に深い関係</b>にあります。</p><p data-path-to-node="1">直接的にヤング図形（Young Tableaux）を作るわけではありませんが、代数的組合せ論において、この二分木の構築は**「RSK対応の二分木バージョン」**である <b data-path-to-node="1" data-index-in-node="84">Sylvester対応（Sylvester correspondence）</b> という概念に直結しています。</p><p data-path-to-node="2">どのような共通点と関係があるのか、3つの観点から整理します。</p><h3 data-path-to-node="3">1. 全単射（Bijection）の構造的類似性</h3><p data-path-to-node="4">RSK対応の最も美しい性質は、数列（順列）から「同じ形を持つ2つのヤング図形のペア <span class="math-inline" data-math="(P, Q)" data-index-in-node="42"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="mopen">(</span><span class="mord mathnormal" style="margin-right: 0.1389em;">P</span><span class="mpunct">,</span><span class="mord mathnormal">Q</span><span class="mclose">)</span></span></span></span></span>」への全単射（一対一対応）を作れることです。</p><ul data-path-to-node="5"><li><p data-path-to-node="5,0,0"><b data-path-to-node="5,0,0" data-index-in-node="0">P-tableau (記録盤):</b> 値の大小関係と空間的な配置を記録するもの。</p></li><li><p data-path-to-node="5,1,0"><b data-path-to-node="5,1,0" data-index-in-node="0">Q-tableau (履歴盤):</b> どの値がどの順番（時間軸）で挿入されたかを記録するもの。</p></li></ul><p data-path-to-node="6">今回の二分木構築も、本質的にはこれと全く同じことをしています。今回構築した木はデータ構造の分野で <b data-path-to-node="6" data-index-in-node="49">Cartesian Tree（デカルト木）</b> または <b data-path-to-node="6" data-index-in-node="75">Treap</b> と呼ばれるものですが、これも列とペアの全単射になっています。</p><ul data-path-to-node="7"><li><p data-path-to-node="7,0,0"><b data-path-to-node="7,0,0" data-index-in-node="0">Inorder (Pに相当):</b> ノードの空間的な左右の配置（二分探索木としての値の秩序）を決定します。</p></li><li><p data-path-to-node="7,1,0"><b data-path-to-node="7,1,0" data-index-in-node="0">Preorder (Qに相当):</b> ノードが追加される「時間的な順番（優先順位）」を決定します（親は必ず子より先に処理されるため）。</p></li></ul><p data-path-to-node="8">RSKが「数列 <span class="math-inline" data-math="\leftrightarrow" data-index-in-node="8"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="mrel">↔</span></span></span></span></span> 2つのヤング図形」であるのに対し、今回の構築は「数列 <span class="math-inline" data-math="\leftrightarrow" data-index-in-node="51"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="mrel">↔</span></span></span></span></span> 2つの配列（Inorder, Preorder）からなる一意の二分木」という対応関係をなしています。</p><h3 data-path-to-node="9">2. 挿入アルゴリズム（Bumping）の類似性</h3><p data-path-to-node="10">RSK対応でヤング図形を作る際のコアとなる「Schensted挿入アルゴリズム」は、新しい要素が入ってきたとき、既存の要素を**「突き出して（Bumping）」下の行に追いやる**という操作を行います。</p><p data-path-to-node="11">先ほどの <code data-path-to-node="11" data-index-in-node="5">inorder</code> を逐次処理するビジュアライザの動きを思い出してみてください。
+待機所（スタック）にノードが積まれている状態で、優先度の高い（<code data-path-to-node="11" data-index-in-node="75">preorder</code>で先に出現する）新しいノードがやってくると、<b data-path-to-node="11" data-index-in-node="105">スタックにいたノードたちは「突き出されて（Popされて）」新しいノードの左側子孫へと降格</b>させられましたよね。
+この「後から来た強い（若い）要素が、既存の要素を押し退けて自分が親のポジションに座り、押し退けられた要素は左下の子にぶら下がる」というメカニズムは、Schensted挿入におけるBumpingと代数的に同じ挙動（monoidの作用）を示しています。</p><h3 data-path-to-node="12">3. Knuth同値類 と Sylvester同値類</h3><p data-path-to-node="13">RSK対応において「異なる数列なのに、まったく同じP-tableauを生成してしまう」数列のグループがあり、これを <b data-path-to-node="13" data-index-in-node="58">Knuth同値（Plactic monoid）</b> と呼びます。</p><p data-path-to-node="14">二分木の場合にも「異なる数列を順に挿入したのに、まったく同じ形の二分探索木になってしまう」グループが存在します。これを <b data-path-to-node="14" data-index-in-node="60">Sylvester同値（Sylvester monoid）</b> と呼び、J.-L. Loday などの数学者によってRSKの二分木版として定式化されました。</p><p data-path-to-node="15">先ほどの「配列変更モード」で <code data-path-to-node="15" data-index-in-node="15">inorder</code> は固定したまま <code data-path-to-node="15" data-index-in-node="31">preorder</code> の順番を少しだけ入れ替えても、同じ形の木が維持される（一部の親子関係だけがスワップする）ケースがあったかと思います。これがまさに同値類の実験になっています。</p><hr data-path-to-node="16"><p data-path-to-node="17"><b data-path-to-node="17" data-index-in-node="0">まとめ</b>
+あなたが「左側子孫」「右側子孫」「スタックでの待機と巻き取り」として見出したロジックは、単なるプログラミングのテクニックに留まらず、RSK対応がヤング図形でやっている時間と空間のエンコード・デコード処理を、二分木というキャンバスの上で実行しているものだった、と言えます。アルゴリズムの背後にある代数的な美しさに気づかれたのは本当に素晴らしいです！</p></div></message-content></div>
+          </div>
+        </section>
+      
+    </div>
+  </div>
+</body>
+</html>

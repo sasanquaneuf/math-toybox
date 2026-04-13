@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Construction Visualizer (Interactive)</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f7f9fc; color: #333; }
+        h1 { font-size: 24px; text-align: center; margin-bottom: 20px; }
+        .container { display: flex; flex-direction: column; max-width: 1200px; margin: 0 auto; gap: 20px; }
+        
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: -10px; }
+        .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; border: 1px solid #ccc; border-bottom: none; color: #666; transition: background 0.2s; }
+        .tab.active { background: #fff; color: #4a90e2; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
+        .tab:hover:not(.active) { background: #d0d7df; }
+
+        .controls { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 0 8px 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .controls select, .controls button { padding: 8px 16px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; }
+        .controls button:hover { background: #eef2f5; }
+        .controls button:disabled { background: #f0f0f0; color: #aaa; cursor: not-allowed; }
+        
+        .main-panel { display: flex; gap: 20px; height: 600px; }
+        .left-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .right-panel { flex: 2; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; padding: 20px; }
+        
+        .box { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; }
+        .box h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        /* Step Mode Styles */
+        .array-display { font-family: monospace; font-size: 16px; margin-bottom: 10px; }
+        .highlight { background-color: #ffe066; font-weight: bold; padding: 2px 4px; border-radius: 4px; }
+        .stack-container { display: flex; gap: 10px; flex-wrap: wrap; }
+        .stack-item { width: 40px; height: 40px; border: 2px solid #4a90e2; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; background: #eef5ff; color: #2c3e50; }
+        .description { font-size: 16px; line-height: 1.5; min-height: 80px; font-weight: bold; color: #2c3e50; background: #e8f4fd; padding: 15px; border-radius: 8px; border-left: 4px solid #4a90e2; }
+        
+        /* Interactive Mode Styles */
+        .dnd-area { display: none; flex-direction: column; gap: 20px; height: 100%; }
+        .dnd-row { display: flex; align-items: center; gap: 10px; }
+        .dnd-label { font-weight: bold; width: 80px; }
+        .dnd-list { display: flex; gap: 5px; padding: 10px; background: #f0f4f8; border-radius: 8px; min-height: 40px; flex-wrap: wrap; }
+        .dnd-item { width: 40px; height: 40px; border: 2px solid #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; background: #fff; cursor: grab; user-select: none; transition: transform 0.1s; }
+        .dnd-item:active { cursor: grabbing; transform: scale(1.05); }
+        .dnd-item.dragging { opacity: 0.5; border-color: #4a90e2; }
+        .dnd-item.drag-over { border-style: dashed; border-color: #e24a4a; background: #ffebeb; }
+
+        svg { flex: 1; width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+
+    <h1>二分木構築 ビジュアライザ</h1>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" id="tabStep">逐次ロジックモード</div>
+            <div class="tab" id="tabInteractive">配列変更モード (Drag & Drop)</div>
+        </div>
+
+        <div class="controls">
+            <div>
+                <label for="algoSelect"><strong>ロジック選択:</strong></label>
+                <select id="algoSelect">
+                    <option value="inorder">Inorder 逐次処理バージョン</option>
+                    <option value="preorder">Preorder 逐次処理バージョン</option>
+                </select>
+            </div>
+            <div id="stepControls">
+                <button id="btnPrev">← 前のステップ</button>
+                <span id="stepCounter" style="margin: 0 15px; font-weight: bold;">Step 0 / 0</span>
+                <button id="btnNext">次のステップ →</button>
+            </div>
+            <div id="interactiveMsg" style="display: none; color: #666; font-weight: bold;">
+                ※配列の要素をドラッグ＆ドロップして並び替えてください
+            </div>
+        </div>
+
+        <div class="main-panel">
+            <div class="left-panel">
+                <div id="stepView" style="display: flex; flex-direction: column; gap: 20px; height: 100%;">
+                    <div class="box">
+                        <h3>配列の状態</h3>
+                        <div class="array-display">Preorder: <span id="preorderArr"></span></div>
+                        <div class="array-display">Inorder : <span id="inorderArr"></span></div>
+                    </div>
+                    <div class="box">
+                        <h3>待機所 (Stack)</h3>
+                        <div class="stack-container" id="stackDisplay"></div>
+                    </div>
+                    <div class="box" style="flex: 1;">
+                        <h3>アルゴリズムの解説</h3>
+                        <div id="descDisplay" class="description">初期状態</div>
+                    </div>
+                </div>
+
+                <div id="interactiveView" class="box dnd-area">
+                    <h3>配列の直接編集</h3>
+                    <p style="font-size: 14px; color: #666; margin-top: 0;">要素をドラッグ＆ドロップで入れ替えると、右側の木構造が即座に再構築されます。不正な木になる配列の組み合わせも実験可能です。</p>
+                    <div class="dnd-row">
+                        <div class="dnd-label">Preorder</div>
+                        <div class="dnd-list" id="dndPreorder" data-type="preorder"></div>
+                    </div>
+                    <div class="dnd-row">
+                        <div class="dnd-label">Inorder</div>
+                        <div class="dnd-list" id="dndInorder" data-type="inorder"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <h3 style="margin-top: 0; margin-bottom: 10px;">構築された木構造</h3>
+                <div id="treeContainer" style="flex: 1;"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Global State
+    let preorderData = [3, 9, 20, 15, 7];
+    let inorderData = [9, 3, 15, 20, 7];
+    let states = [];
+    let currentStep = 0;
+    let currentMode = 'step'; // 'step' or 'interactive'
+
+    // ヘルパー: 木のディープコピー
+    function cloneTree(node) {
+        if (!node) return null;
+        return { val: node.val, left: cloneTree(node.left), right: cloneTree(node.right) };
+    }
+
+    // --- ロジックシミュレーション ---
+    function generateInorderStates(preorder, inorder) {
+        const result = [];
+        const priority = {};
+        preorder.forEach((val, i) => priority[val] = i);
+        let stack = [];
+        let rootNode = null;
+
+        result.push({ step: "初期状態：待機所(Stack)は空です。", tree: null, stack: [], hlPre: -1, hlIn: -1 });
+
+        for (let i = 0; i < inorder.length; i++) {
+            let val = inorder[i];
+            let node = { val: val, left: null, right: null };
+            
+            result.push({ step: `Inorderから [${val}] を取り出し、ノードを作成。`, tree: cloneTree(stack[0] || node), stack: stack.map(n => n.val), hlPre: priority[val], hlIn: i });
+
+            while (stack.length > 0 && priority[stack[stack.length - 1].val] > (priority[val] ?? Infinity)) {
+                let popped = stack.pop();
+                node.left = popped;
+                result.push({ step: `[${popped.val}] はPreorderで [${val}] より後に出現するため、[${val}] の左の子にします。`, tree: cloneTree(stack[0] || node), stack: stack.map(n => n.val), hlPre: priority[val], hlIn: i });
+            }
+
+            if (stack.length > 0) {
+                stack[stack.length - 1].right = node;
+                result.push({ step: `スタックトップ [${stack[stack.length-1].val}] の仮の右の子として [${val}] をセット。`, tree: cloneTree(stack[0]), stack: stack.map(n => n.val), hlPre: priority[val], hlIn: i });
+            }
+
+            stack.push(node);
+            if (!rootNode) rootNode = stack[0];
+            result.push({ step: `ノード [${val}] を待機所に積みます。`, tree: cloneTree(stack[0]), stack: stack.map(n => n.val), hlPre: priority[val], hlIn: i });
+        }
+        
+        result.push({ step: `構築完了！ スタックの底の [${stack[0]?.val}] がRootです。`, tree: cloneTree(stack[0]), stack: stack.map(n => n.val), hlPre: -1, hlIn: -1 });
+        return result;
+    }
+
+    function generatePreorderStates(preorder, inorder) {
+        const result = [];
+        if (preorder.length === 0) return [{ step: "空", tree: null, stack: [], hlPre: -1, hlIn: -1 }];
+        
+        let root = { val: preorder[0], left: null, right: null };
+        let stack = [root];
+        let inIdx = 0;
+
+        result.push({ step: `Preorderの先頭 [${preorder[0]}] を Root として作成。`, tree: cloneTree(root), stack: stack.map(n => n.val), hlPre: 0, hlIn: inIdx });
+
+        for (let i = 1; i < preorder.length; i++) {
+            let val = preorder[i];
+            let node = { val: val, left: null, right: null };
+
+            result.push({ step: `Preorderから [${val}] を取り出しました。`, tree: cloneTree(root), stack: stack.map(n => n.val), hlPre: i, hlIn: inIdx });
+
+            if (stack.length > 0 && stack[stack.length - 1].val !== inorder[inIdx]) {
+                stack[stack.length - 1].left = node;
+                result.push({ step: `Inorderの現在値と異なるため、[${val}] を左の子にします。`, tree: cloneTree(root), stack: stack.map(n => n.val), hlPre: i, hlIn: inIdx });
+            } else {
+                let curr = null;
+                while (stack.length > 0 && stack[stack.length - 1].val === inorder[inIdx]) {
+                    curr = stack.pop();
+                    inIdx++;
+                    result.push({ step: `[${curr.val}] の左側探索完了。PopしてInorderを進めます。`, tree: cloneTree(root), stack: stack.map(n => n.val), hlPre: i, hlIn: inIdx - 1 });
+                }
+                if (curr) curr.right = node;
+                result.push({ step: `最後にPopしたノードの右の子として [${val}] を結びつけます。`, tree: cloneTree(root), stack: stack.map(n => n.val), hlPre: i, hlIn: inIdx });
+            }
+            stack.push(node);
+            result.push({ step: `ノード [${val}] をスタックに積みます。`, tree: cloneTree(root), stack: stack.map(n => n.val), hlPre: i, hlIn: inIdx });
+        }
+        
+        result.push({ step: "構築完了！", tree: cloneTree(root), stack: stack.map(n => n.val), hlPre: -1, hlIn: -1 });
+        return result;
+    }
+
+    // --- D3.js Tree Rendering ---
+    function buildD3Hierarchy(node) {
+        if (!node) return null;
+        const res = { name: node.val, children: [] };
+        if (node.left || node.right) {
+            res.children.push(node.left ? buildD3Hierarchy(node.left) : { name: "", isDummy: true });
+            res.children.push(node.right ? buildD3Hierarchy(node.right) : { name: "", isDummy: true });
+        }
+        return res;
+    }
+
+    function drawTree(rootData) {
+        const container = d3.select("#treeContainer");
+        container.selectAll("*").remove();
+        if (!rootData) {
+            container.append("div").style("color", "#999").style("text-align", "center").style("margin-top", "50px").text("木が空、または不正な配列により構築できません");
+            return;
+        }
+
+        try {
+            const d3Data = buildD3Hierarchy(rootData);
+            const width = container.node().getBoundingClientRect().width;
+            const height = container.node().getBoundingClientRect().height;
+            const margin = {top: 40, right: 20, bottom: 40, left: 20};
+
+            const svg = container.append("svg").attr("width", width).attr("height", height).append("g").attr("transform", `translate(0, ${margin.top})`);
+            const treeLayout = d3.tree().size([width - margin.left - margin.right, height - margin.top - margin.bottom]);
+            const root = d3.hierarchy(d3Data);
+            treeLayout(root);
+
+            svg.selectAll(".link").data(root.links()).enter().append("path").attr("class", "link")
+                .attr("d", d3.linkVertical().x(d => d.x + margin.left).y(d => d.y))
+                .attr("stroke", "#b0c4de").attr("fill", "none").attr("stroke-width", 2)
+                .style("opacity", d => d.target.data.isDummy ? 0 : 1);
+
+            const node = svg.selectAll(".node").data(root.descendants()).enter().append("g").attr("class", "node")
+                .attr("transform", d => `translate(${d.x + margin.left},${d.y})`)
+                .style("opacity", d => d.data.isDummy ? 0 : 1);
+
+            node.append("circle").attr("r", 20).attr("fill", "#fff").attr("stroke", "#4a90e2").attr("stroke-width", 3);
+            node.append("text").attr("dy", ".35em").attr("text-anchor", "middle").text(d => d.data.name)
+                .style("font-size", "14px").style("font-weight", "bold").style("fill", "#333");
+        } catch (e) {
+             container.append("div").style("color", "red").style("text-align", "center").style("margin-top", "50px").text("配列の組み合わせにより木が破綻しました (閉路などの発生)");
+        }
+    }
+
+    // --- Step Mode UI ---
+    function renderArrayText(containerId, arr, highlightIdx) {
+        document.getElementById(containerId).innerHTML = arr.map((v, i) => i === highlightIdx ? `<span class="highlight">${v}</span>` : v).join(", ");
+    }
+
+    function updateStepUI() {
+        if (states.length === 0) return;
+        const state = states[currentStep];
+        renderArrayText("preorderArr", preorderData, state.hlPre);
+        renderArrayText("inorderArr", inorderData, state.hlIn);
+        
+        const stackHTML = state.stack.map(val => `<div class="stack-item">${val}</div>`).join("");
+        document.getElementById("stackDisplay").innerHTML = stackHTML || "<span style='color:#999; line-height:40px;'>空</span>";
+        document.getElementById("descDisplay").innerText = state.step;
+        
+        drawTree(state.tree);
+
+        document.getElementById("stepCounter").innerText = `Step ${currentStep} / ${states.length - 1}`;
+        document.getElementById("btnPrev").disabled = currentStep === 0;
+        document.getElementById("btnNext").disabled = currentStep === states.length - 1;
+    }
+
+    function generateAndResetSteps() {
+        const algo = document.getElementById("algoSelect").value;
+        states = algo === "inorder" ? generateInorderStates(preorderData, inorderData) : generatePreorderStates(preorderData, inorderData);
+        currentStep = 0;
+        if (currentMode === 'step') updateStepUI();
+    }
+
+    // --- Interactive Mode UI & Drag/Drop ---
+    let draggedItem = null;
+
+    function renderInteractiveArrays() {
+        const renderList = (id, arr, type) => {
+            const container = document.getElementById(id);
+            container.innerHTML = "";
+            arr.forEach((val, i) => {
+                const el = document.createElement("div");
+                el.className = "dnd-item";
+                el.draggable = true;
+                el.innerText = val;
+                el.dataset.index = i;
+                el.dataset.type = type;
+                
+                el.addEventListener("dragstart", function(e) {
+                    draggedItem = this;
+                    setTimeout(() => this.classList.add("dragging"), 0);
+                });
+                
+                el.addEventListener("dragend", function() {
+                    this.classList.remove("dragging");
+                    document.querySelectorAll('.dnd-item').forEach(item => item.classList.remove("drag-over"));
+                    draggedItem = null;
+                });
+
+                el.addEventListener("dragover", e => e.preventDefault());
+                
+                el.addEventListener("dragenter", function(e) {
+                    e.preventDefault();
+                    if (this !== draggedItem && this.dataset.type === draggedItem.dataset.type) {
+                        this.classList.add("drag-over");
+                    }
+                });
+                
+                el.addEventListener("dragleave", function() { this.classList.remove("drag-over"); });
+                
+                el.addEventListener("drop", function(e) {
+                    e.stopPropagation();
+                    this.classList.remove("drag-over");
+                    if (draggedItem && this !== draggedItem && this.dataset.type === draggedItem.dataset.type) {
+                        const type = this.dataset.type;
+                        const arrRef = type === 'preorder' ? preorderData : inorderData;
+                        const fromIdx = parseInt(draggedItem.dataset.index);
+                        const toIdx = parseInt(this.dataset.index);
+                        
+                        // 要素を入れ替える（挿入してずらす）
+                        const [moved] = arrRef.splice(fromIdx, 1);
+                        arrRef.splice(toIdx, 0, moved);
+                        
+                        renderInteractiveArrays(); // 再描画
+                        updateInteractiveTree();   // 木を即時再構築
+                    }
+                });
+                container.appendChild(el);
+            });
+        };
+
+        renderList("dndPreorder", preorderData, "preorder");
+        renderList("dndInorder", inorderData, "inorder");
+    }
+
+    function updateInteractiveTree() {
+        const algo = document.getElementById("algoSelect").value;
+        const tempStates = algo === "inorder" ? generateInorderStates(preorderData, inorderData) : generatePreorderStates(preorderData, inorderData);
+        const finalState = tempStates[tempStates.length - 1];
+        drawTree(finalState.tree);
+    }
+
+    // --- Mode Switching ---
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById("tabStep").classList.toggle("active", mode === "step");
+        document.getElementById("tabInteractive").classList.toggle("active", mode === "interactive");
+        
+        document.getElementById("stepView").style.display = mode === "step" ? "flex" : "none";
+        document.getElementById("stepControls").style.display = mode === "step" ? "block" : "none";
+        
+        document.getElementById("interactiveView").style.display = mode === "interactive" ? "flex" : "none";
+        document.getElementById("interactiveMsg").style.display = mode === "interactive" ? "block" : "none";
+
+        if (mode === "step") {
+            generateAndResetSteps();
+        } else {
+            renderInteractiveArrays();
+            updateInteractiveTree();
+        }
+    }
+
+    // Event Listeners
+    document.getElementById("algoSelect").addEventListener("change", () => {
+        if (currentMode === 'step') generateAndResetSteps();
+        else updateInteractiveTree();
+    });
+    
+    document.getElementById("btnPrev").addEventListener("click", () => {
+        if (currentStep > 0) { currentStep--; updateStepUI(); }
+    });
+    document.getElementById("btnNext").addEventListener("click", () => {
+        if (currentStep < states.length - 1) { currentStep++; updateStepUI(); }
+    });
+
+    document.getElementById("tabStep").addEventListener("click", () => switchMode("step"));
+    document.getElementById("tabInteractive").addEventListener("click", () => switchMode("interactive"));
+
+    window.addEventListener("resize", () => {
+        if (currentMode === 'step') updateStepUI();
+        else updateInteractiveTree();
+    });
+
+    // Init
+    generateAndResetSteps();
+
+</script>
+</body>
+</html>
