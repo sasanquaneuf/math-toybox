@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inorder/Preorder Involution (n=3)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        canvas {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-2xl md:text-3xl font-bold mb-4 text-slate-900">Treapの Inorder / Preorder 対合 (n=3)</h1>
+        
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8 text-slate-600 leading-relaxed">
+            <p class="mb-3">
+                長さ <code>n=3</code> の配列 <code>[1,2,3]</code> の順列からなる <strong>inorder</strong> と <strong>preorder</strong> のペアのうち、有効な二分木を構成できる全30通りを列挙しています。<br>
+                それぞれの木を <strong>Treap（デカルト木）</strong> と見立て、各ノードの論理座標を <code>(x, y) = (inorderのインデックス, preorderのインデックス)</code> として平面上に配置しました。
+            </p>
+            <p class="mb-3">
+                配列の並びを逆順にし、inorderとpreorderを入れ替えるという操作：<br>
+                <code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono text-sm">New Inorder = reverse(Preorder)</code><br>
+                <code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono text-sm mt-1 inline-block">New Preorder = reverse(Inorder)</code><br>
+                を行うと、得られた新しいペアも必ず有効な二分木を構成します（この変換は2回行うと元に戻る<strong>対合</strong>です）。
+            </p>
+            <p>
+                幾何学的には、この変換は平面上で <strong>直線 <span class="text-red-500 font-semibold">y = -x + 2</span> （赤い破線）に関する折り返し対称移動</strong> に相当し、各ノードの座標が <code>(x, y) → (2-y, 2-x)</code> に移る様子がはっきりと観察できます。
+            </p>
+        </div>
+
+        <div id="pairs-container" class="flex flex-col gap-6">
+            <!-- Javascriptでペアを描画 -->
+        </div>
+    </div>
+
+    <script>
+        // --- アルゴリズムとデータ構造 ---
+
+        // 順列を生成する関数
+        function getPermutations(arr) {
+            if (arr.length === 0) return [[]];
+            let result = [];
+            for (let i = 0; i < arr.length; i++) {
+                let current = arr[i];
+                let remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+                let remainingPerms = getPermutations(remaining);
+                for (let perm of remainingPerms) {
+                    result.push([current].concat(perm));
+                }
+            }
+            return result;
+        }
+
+        // inorderとpreorderから二分木を構築する関数（無効な場合はnull）
+        function buildTree(inorder, preorder) {
+            if (inorder.length === 0 || preorder.length === 0) return null;
+            if (inorder.length !== preorder.length) return null;
+
+            let rootVal = preorder[0];
+            let rootIdx = inorder.indexOf(rootVal);
+            if (rootIdx === -1) return null; // 無効なペア
+
+            let leftIn = inorder.slice(0, rootIdx);
+            let rightIn = inorder.slice(rootIdx + 1);
+
+            let leftPre = preorder.slice(1, 1 + leftIn.length);
+            let rightPre = preorder.slice(1 + leftIn.length);
+
+            // 要素の整合性チェック
+            const setIn = new Set(leftIn);
+            for (let val of leftPre) {
+                if (!setIn.has(val)) return null;
+            }
+
+            let left = buildTree(leftIn, leftPre);
+            let right = buildTree(rightIn, rightPre);
+
+            if (leftIn.length > 0 && !left) return null;
+            if (rightIn.length > 0 && !right) return null;
+
+            return { val: rootVal, left, right };
+        }
+
+        // 対合を計算する関数
+        function getInvolution(inorder, preorder) {
+            return {
+                inorder: [...preorder].reverse(),
+                preorder: [...inorder].reverse()
+            };
+        }
+
+        // --- 描画ロジック ---
+
+        function drawTree(canvas, inorder, preorder, tree) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            const margin = 40;
+            const innerSize = width - margin * 2;
+            const step = innerSize / 2; // n=3 なのでインデックスは 0, 1, 2。間隔は2つ。
+
+            // 座標計算ヘルパー
+            function getCoords(val) {
+                let x = inorder.indexOf(val);
+                let y = preorder.indexOf(val);
+                return {
+                    px: margin + x * step,
+                    py: margin + y * step,
+                    lx: x,
+                    ly: y
+                };
+            }
+
+            // 1. グリッドと軸ラベルの描画
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for(let i=0; i<=2; i++) {
+                ctx.beginPath(); ctx.moveTo(margin + i*step, margin); ctx.lineTo(margin + i*step, height - margin); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(margin, margin + i*step); ctx.lineTo(width - margin, margin + i*step); ctx.stroke();
+            }
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '12px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for(let i=0; i<=2; i++) {
+                ctx.fillText(i, margin + i*step, 20); // X軸目盛り
+                ctx.fillText(i, 20, margin + i*step); // Y軸目盛り
+            }
+            ctx.fillText('X (in)', width / 2, 8);
+            ctx.fillText('Y (pre)', 20, 8);
+
+            // 2. 対合の対称軸 (y = -x + 2) の描画
+            ctx.strokeStyle = '#fca5a5';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            ctx.moveTo(margin + 0*step, margin + 2*step); // (0, 2)
+            ctx.lineTo(margin + 2*step, margin + 0*step); // (2, 0)
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 3. エッジ（辺）の描画
+            function drawEdges(node) {
+                if (!node) return;
+                const pCoords = getCoords(node.val);
+                
+                if (node.left) {
+                    const cCoords = getCoords(node.left.val);
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(pCoords.px, pCoords.py); ctx.lineTo(cCoords.px, cCoords.py); ctx.stroke();
+                    drawEdges(node.left);
+                }
+                if (node.right) {
+                    const cCoords = getCoords(node.right.val);
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(pCoords.px, pCoords.py); ctx.lineTo(cCoords.px, cCoords.py); ctx.stroke();
+                    drawEdges(node.right);
+                }
+            }
+            drawEdges(tree);
+
+            // 4. ノード（頂点）の描画
+            const nodes = [1, 2, 3];
+            for (let val of nodes) {
+                const coords = getCoords(val);
+                
+                // ノードの円
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(coords.px, coords.py, 14, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#1e3a8a';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // ノードの値
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px -apple-system, sans-serif';
+                ctx.fillText(val, coords.px, coords.py);
+                
+                // 座標テキスト (x, y)
+                ctx.fillStyle = '#475569';
+                ctx.font = '11px monospace';
+                ctx.textAlign = 'left';
+                // 重ならないように少しずらして配置
+                ctx.fillText(`(${coords.lx},${coords.ly})`, coords.px + 10, coords.py + 18);
+                ctx.textAlign = 'center';
+            }
+        }
+
+        // --- メイン処理 ---
+
+        const perms = getPermutations([1, 2, 3]);
+        let validPairs = [];
+
+        // 全ての有効なペアを抽出
+        for (let I of perms) {
+            for (let P of perms) {
+                const tree = buildTree(I, P);
+                if (tree) {
+                    validPairs.push({ inorder: I, preorder: P, tree: tree });
+                }
+            }
+        }
+
+        const container = document.getElementById('pairs-container');
+        const processed = new Set();
+        let pairCount = 1;
+
+        // ペアをマッチングしてDOMに描画
+        validPairs.forEach(pair => {
+            const key1 = pair.inorder.join(',') + '|' + pair.preorder.join(',');
+            if (processed.has(key1)) return;
+
+            const inv = getInvolution(pair.inorder, pair.preorder);
+            const key2 = inv.inorder.join(',') + '|' + inv.preorder.join(',');
+            
+            processed.add(key1);
+            processed.add(key2);
+
+            const isSelf = key1 === key2;
+            const invTree = buildTree(inv.inorder, inv.preorder);
+
+            // カードUIの生成
+            const card = document.createElement('div');
+            card.className = 'bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-4';
+            
+            const header = document.createElement('div');
+            header.className = 'flex items-center gap-3 border-b border-slate-100 pb-2';
+            header.innerHTML = `
+                <h3 class="text-lg font-bold text-slate-800">Pair ${pairCount++}</h3>
+                ${isSelf ? '<span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full border border-emerald-200">自己対合 (Self-Involution)</span>' : ''}
+            `;
+            card.appendChild(header);
+
+            const flexBox = document.createElement('div');
+            flexBox.className = 'flex flex-col md:flex-row items-center justify-around gap-6 py-2';
+            
+            // 左側の木
+            flexBox.appendChild(createTreeUI(pair.inorder, pair.preorder, pair.tree, '元の木'));
+
+            // 中央の矢印
+            const arrowDiv = document.createElement('div');
+            arrowDiv.className = 'text-3xl text-slate-300 rotate-90 md:rotate-0 flex flex-col items-center';
+            arrowDiv.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8"/><path d="m4 14 4-4 4 4"/><path d="M21 8 8 21"/></svg>
+                <span class="text-xs text-slate-400 font-mono mt-1">Transform</span>
+            `;
+            // SVGアイコンで両方向や変換を示す
+            arrowDiv.innerHTML = `
+                 <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+            `;
+            flexBox.appendChild(arrowDiv);
+
+            // 右側の木
+            flexBox.appendChild(createTreeUI(inv.inorder, inv.preorder, invTree, isSelf ? '変換後 (変化なし)' : '変換後'));
+
+            card.appendChild(flexBox);
+            container.appendChild(card);
+        });
+
+        // 木描画用UI部品の生成
+        function createTreeUI(inorder, preorder, tree, title) {
+            const div = document.createElement('div');
+            div.className = 'flex flex-col items-center gap-3 bg-slate-50 p-4 rounded-lg border border-slate-100';
+            
+            const titleEl = document.createElement('div');
+            titleEl.className = 'text-sm font-bold text-slate-500';
+            titleEl.textContent = title;
+            div.appendChild(titleEl);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 240;
+            canvas.height = 240;
+            canvas.className = 'shadow-sm';
+            drawTree(canvas, inorder, preorder, tree);
+            div.appendChild(canvas);
+
+            const info = document.createElement('div');
+            info.className = 'text-xs md:text-sm font-mono text-slate-700 bg-white border border-slate-200 px-3 py-2 rounded w-full';
+            info.innerHTML = `
+                <div class="flex justify-between border-b border-slate-100 pb-1 mb-1">
+                    <span class="text-slate-400">in:</span> <span>[${inorder.join(', ')}]</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">pre:</span> <span>[${preorder.join(', ')}]</span>
+                </div>
+            `;
+            div.appendChild(info);
+
+            return div;
+        }
+    </script>
+</body>
+</html>

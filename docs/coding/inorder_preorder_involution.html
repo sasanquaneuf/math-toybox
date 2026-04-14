@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Treapの対合変換可視化HTML - Google Gemini - Conversation Export</title>
+  <style>
+    :root{
+      color-scheme: light dark;
+      --bg:#0b0c10;
+      --card: rgba(255,255,255,0.06);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.65);
+      --border: rgba(255,255,255,0.12);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo", sans-serif;
+      --userAccent: rgba(96, 165, 250, 0.25);
+      --modelAccent: rgba(52, 211, 153, 0.22);
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f7fb;
+        --card: rgba(0,0,0,0.04);
+        --text: rgba(0,0,0,0.90);
+        --muted: rgba(0,0,0,0.60);
+        --border: rgba(0,0,0,0.12);
+        --userAccent: rgba(59, 130, 246, 0.18);
+        --modelAccent: rgba(16, 185, 129, 0.16);
+      }
+    }
+    body { margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); line-height:1.55; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+    .header { border:1px solid var(--border); background:var(--card); border-radius:14px; padding:16px 16px 12px; margin-bottom:16px; }
+    .title { font-size:18px; font-weight:800; margin:0 0 6px; }
+    .meta { font-size:12px; color:var(--muted); display:flex; flex-wrap:wrap; gap:10px; }
+    .meta a { color: inherit; text-decoration:none; border-bottom:1px dotted var(--border); }
+    .meta a:hover { border-bottom-style: solid; }
+
+    .note { border:1px solid var(--border); background:var(--card); border-radius:14px; padding:14px 16px; margin:12px 0 16px; }
+    .note-title { font-weight:700; margin-bottom:6px; font-size:13px; }
+    .note-body { white-space:pre-wrap; font-size:13px; }
+
+    .timeline { display:flex; flex-direction:column; gap: 12px; }
+
+    .turn {
+      border:1px solid var(--border);
+      background:var(--card);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .turn.user { box-shadow: inset 0 0 0 9999px var(--userAccent); }
+    .turn.model { box-shadow: inset 0 0 0 9999px var(--modelAccent); }
+
+    .turn-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      background: rgba(0,0,0,0.06);
+    }
+    @media (prefers-color-scheme: light){
+      .turn-head { background: rgba(0,0,0,0.02); }
+    }
+    .role {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .turn-body {
+      padding: 12px 12px 14px;
+      overflow-wrap:anywhere;
+      word-break: break-word;
+    }
+
+    /* 装飾は維持 */
+    pre, code { font-family: var(--mono); }
+    pre {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      overflow: auto;
+      white-space: pre;
+      margin: 12px 0;
+    }
+    @media (prefers-color-scheme: light) { pre { background: rgba(0,0,0,0.04); } }
+    code {
+      padding: 0.15em 0.35em;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.10);
+    }
+    h1,h2,h3 { margin: 16px 0 8px; }
+    p { margin: 8px 0; }
+    ul,ol { margin: 8px 0 8px 24px; }
+    blockquote {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-left: 4px solid var(--border);
+      background: rgba(0,0,0,0.10);
+      border-radius: 10px;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+    th, td { border: 1px solid var(--border); padding: 8px; vertical-align: top; }
+    img { max-width: 100%; height: auto; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">Treapの対合変換可視化HTML - Google Gemini</h1>
+      <div class="meta">
+        <div>Exported: <span>2026-04-14T22:31:31.511Z</span></div>
+      </div>
+    </div>
+    
+    <div class="timeline">
+      
+        <section class="turn user">
+          <div class="turn-head">
+            <div class="role">User</div>
+          </div>
+          <div class="turn-body">
+            <user-query-content class="user-query-container enable-2026q1-formatting-improvements" style="--max-lines-for-collapse-count: 5;"><div class="user-query-container"><div class="query-content" id="user-query-content-0" jslog="275422;track:impression,attention"><span class="user-query-bubble-with-background enable-2026q1-formatting-improvements"><span class="horizontal-container"><div role="heading" aria-level="2" class="query-text gds-body-l query-text-animated collapsed" dir="ltr"><p class="query-text-line">[1,2,3],[1,3,2]からinorder/preorderで二分木を再生する場合に、この配列の並びを反転させて、かむinorderと preorderを入れ替えると、対合が得られます。この対合で、n=3の[1,2,3],[1,2,3]たちのペアのうちの有効な組み合わせがどう変換されるか、可視化するHTMLを作成してください。とくに構成する木をTreapと見た場合に、座標がどう変化するかを観察できるようにしてください。 <!----><!----></p><!----></div><!----><!----><!----><!----></span></span><!----><!----><!----></div><!----><!----><!----></div><!----><!----><!----></user-query-content>
+          </div>
+        </section>
+      
+
+        <section class="turn model">
+          <div class="turn-head">
+            <div class="role">Model</div>
+          </div>
+          <div class="turn-body">
+            Gemini の回答
+<div class="container"><message-content id="message-content-id-r_5c51c77262203068"><div inline-copy-host="" class="markdown markdown-main-panel stronger enable-updated-hr-color" id="model-response-message-contentr_5c51c77262203068" aria-live="polite" aria-busy="false" dir="ltr" style="--animation-duration: 400ms; --fade-animation-function: linear;"><p data-path-to-node="0">ご提示いただいた「inorderとpreorderを反転させて入れ替える操作が、対合（involution）をなし、Treap上の幾何学的な折り返しに対応する」という性質は、非常に美しく興味深い数学的構造です。</p><p data-path-to-node="1">この変換が視覚的にどのように作用するかを観察できるよう、n=3 の全ペア（30通り、対合により15組に分類）を列挙し、キャンバスに描画するシングルファイルのHTMLアプリケーションを作成しました。</p><p data-path-to-node="2">以下のファイルにコードを出力します。</p><div class="attachment-container unknown"><response-element class="" ng-version="0.0.0-PLACEHOLDER"><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><immersive-entry-chip><!----><div data-test-id="container" class="container is-open clickable" jslog="275420;track:impression,attention;BardVeMetadataKey:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[&quot;e6fa609c3fa255c0&quot;],null,null,null,null,null,null,null,null,null,null,null,[2]]"><!----><div data-test-id="default-entry-chip-content" class="default-entry-chip-content"><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><div class="text"><!----><div data-test-id="artifact-text" class="gds-title-m">Treap Involution Visualization</div><span data-test-id="creation-timestamp" class="creation-timestamp gds-body-m">4月15日 7:26</span><!----><!----></div><!----><!----><!----></div><!----><!----><!----></div><!----><retry-without-tool-button><!----></retry-without-tool-button><!----><!----><!----><!----></immersive-entry-chip><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----></response-element></div><p></p><h3 data-path-to-node="4">可視化のポイント</h3><ol start="1" data-path-to-node="5"><li><p data-path-to-node="5,0,0"><b data-path-to-node="5,0,0" data-index-in-node="0">Treapとしての座標マッピング:</b> 各ノードのX座標を「inorderでの出現位置 (0,1,2)」、Y座標を「preorderでの出現位置 (0,1,2)」として正確にプロットしています。</p></li><li><p data-path-to-node="5,1,0"><b data-path-to-node="5,1,0" data-index-in-node="0">対角線の明示:</b> 座標が反転する軸である <span class="math-inline" data-math="y = -x + 2" data-index-in-node="20"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="mord mathnormal" style="margin-right: 0.0359em;">y</span><span class="mrel">=</span></span><span class="base"><span class="mord">−</span><span class="mord mathnormal">x</span><span class="mbin">+</span></span><span class="base"><span class="mord">2</span></span></span></span></span> （論理座標の対角線）を赤い破線で描画しています。これにより、変換によって木全体がこの直線を軸にパタンと折り返されていることが直感的に理解できます。</p></li><li><p data-path-to-node="5,2,0"><b data-path-to-node="5,2,0" data-index-in-node="0">自己対合の検出:</b> 変換を行っても元の配列ペアと全く同じ形に戻るもの（自己対合）には緑色のバッジを付与し、不変構造として分かりやすくしています。</p></li><li><p data-path-to-node="5,3,0"><b data-path-to-node="5,3,0" data-index-in-node="0">論理座標の表示:</b> 各ノードの右下に小さく論理座標 <code data-path-to-node="5,3,0" data-index-in-node="25">(x, y)</code> を添えており、変換前と変換後で座標の数値が完全に <code data-path-to-node="5,3,0" data-index-in-node="57">(2-y, 2-x)</code> に入れ替わっていることを確認できるようにしました。</p></li></ol></div></message-content></div>
+          </div>
+        </section>
+      
+    </div>
+  </div>
+</body>
+</html>
